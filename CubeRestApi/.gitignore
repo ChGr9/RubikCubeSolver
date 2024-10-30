@@ -1,0 +1,25 @@
+# Visual Studio specific
+.vs/
+
+# Build directories
+Debug/
+Release/
+x64/
+x86/
+
+# C++ specific
+*.obj
+*.o
+*.exe
+*.out
+*.dll
+*.pdb
+*.ilk
+*.idb
+*.ipch
+*.aps
+*.ncb
+*.sdf
+*.user
+*.opendb
+*.VC.db
