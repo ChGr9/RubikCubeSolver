@@ -2,11 +2,12 @@
 #include <stdexcept>
 #include <algorithm>
 #include <sstream>
+#include <iostream>
 
 KociembaSolver::KociembaSolver()
 	:solutionMoves(std::make_unique<std::array<int, 40>>()),
 	solutionAmmount(std::make_unique<std::array<int, 40>>()),
-	solutionPositions(std::make_unique<std::array<std::array<int, 10>, 40>>()),
+	positions(std::make_unique<std::array<std::array<int, 10>, 40>>()),
 	transformationEdgeOrient(std::make_unique<std::array<std::array<int, 6>, 2048>>()),
 	transformationCornerOrient(std::make_unique<std::array<std::array<int, 6>, 2187>>()),
 	transformationEdgePerm(std::make_unique<std::array<std::array<int, 6>, 40320>>()),
@@ -35,6 +36,66 @@ KociembaSolver::~KociembaSolver() {
 
 void KociembaSolver::reset() {
 	initializeParameters();
+}
+
+bool KociembaSolver::setCubeState(const CubeState& cubeState) {
+	if(!initialized || !cubeState.isValid())
+		return false;
+
+	for (auto& row : *positions) {
+		row.fill(0);
+	}
+
+	(*positions)[0][0] = calculateEdgeOrientation(cubeState);
+	std::cout << "Edge orientation: " << (*positions)[0][0] << std::endl;
+	(*positions)[0][1] = calculateCornerOrientation(cubeState);
+	std::cout << "Corner orientation: " << (*positions)[0][1] << std::endl;
+	(*positions)[0][2] = getNFromPermutation(cubeState.getCubeletPermutations(), 8);
+	std::cout << "Edge permutation: " << (*positions)[0][2] << std::endl;
+	(*positions)[0][3] = getNFromPartialPermutation(cubeState.getCubeletPermutations(), 8, 12, 4, 8);
+	std::cout << "Corner permutation: " << (*positions)[0][3] << std::endl;
+	(*positions)[0][4] = getNFromPartialPermutation(cubeState.getCubeletPermutations(), 8, 12, 4, 12);
+	std::cout << "Slice permutation: " << (*positions)[0][4] << std::endl;
+	(*positions)[0][5] = getNFromPartialPermutation(cubeState.getCubeletPermutations(), 8, 12, 4, 16);
+	std::cout << "Face permutation 1: " << (*positions)[0][5] << std::endl;
+	(*positions)[0][6] = calculateMiddleSlice(cubeState);
+	std::cout << "Middle slice: " << (*positions)[0][6] << std::endl;
+
+
+	resetConfiguration();
+
+	return true;
+}
+
+int KociembaSolver::calculateEdgeOrientation(const CubeState& cubeState) const {
+	int edgeOrientation = 0;
+	for (int i = 10; i >= 0; i--) {
+		edgeOrientation = edgeOrientation * 2 + cubeState.getCubeletOrientations()[8 + i];
+	}
+	return edgeOrientation;
+}
+
+int KociembaSolver::calculateCornerOrientation(const CubeState& cubeState) const {
+	int cornerOrientation = 0;
+	for (int i = 6; i >= 0; i--) {
+		cornerOrientation = cornerOrientation * 3 + cubeState.getCubeletOrientations()[i];
+	}
+	return cornerOrientation;
+}
+
+int KociembaSolver::calculateMiddleSlice(const CubeState& cubeState) const {
+	int middleSlice = 0;
+	for (int i = 10; i >= 0; i--) {
+		middleSlice = middleSlice * 2 + (cubeState.getCubeletPermutations()[8 + i] >= 12 && cubeState.getCubeletPermutations()[8 + i] < 16);
+	}
+	return middleSlice;
+}
+
+void KociembaSolver::resetConfiguration() {
+	solutionLength = phase1Len = phase2Len = 0;
+	maxDepth = 25;
+	solutionMoves->fill(-1);
+	solutionAmmount->fill(3);
 }
 
 void KociembaSolver::initializeParameters() {
@@ -275,7 +336,6 @@ int KociembaSolver::getTransformationEdgePerm(int index, int side) {
 
 int KociembaSolver::getTransformationSlice(int index, int side) {
 	std::array<int, 12> edges{};
-	//generateNthPartialPermutation(edges, 12, 4, 1, index);
 	for (int i = 0; i < 4; i++) {
 		int value = index % (12 - i);
 		index = (index - value) / (12 - i);
@@ -307,7 +367,6 @@ int KociembaSolver::getTransformationSlice(int index, int side) {
 		cycle(edges, 3, 4, 11, 7);
 		break;
 	}
-	//return getNFromPartialPermutation(edges, 12, 4, 1);
 	index = 0;
 	for (int i = 3; i >= 0; i--)
 	{
@@ -433,7 +492,7 @@ void KociembaSolver::generateNthCombination(std::span<int> arr, int len, int val
 	arr[len - 1] = j % valueLimit;
 }
 
-int KociembaSolver::getNFromCombination(std::span<int> arr, int len, int valueLimit) {
+int KociembaSolver::getNFromCombination(std::span<const int> arr, int len, int valueLimit) {
 	int n = 0;
 	for (int i = len - 2; i >= 0; i--)
 	{
@@ -442,7 +501,7 @@ int KociembaSolver::getNFromCombination(std::span<int> arr, int len, int valueLi
 	return n;
 }
 
-int KociembaSolver::getNFromPermutation(std::span<int> arr, int len) {
+int KociembaSolver::getNFromPermutation(std::span<const int> arr, int len) {
 	int n = 0;
 	for (int i = len - 1; i >= 0; i--)
 	{
@@ -456,65 +515,16 @@ int KociembaSolver::getNFromPermutation(std::span<int> arr, int len) {
 	return n;
 }
 
-int KociembaSolver::getNFromPartialPermutation(std::span<int> arr, int len, int permCount, int permOffset) {
+int KociembaSolver::getNFromPartialPermutation(std::span<const int> arr, int start, int len, int permCount, int permOffset) {
 	int n = 0;
 	for (int i = permCount - 1; i >= 0; i--)
 	{
 		int k = 0;
-		for (int j = 0; j < len && arr[j] != permOffset + i; j++)
-			if (arr[j] < permOffset || arr[j] > permOffset + i )
+		for (int j = 0; j < len && arr[start + j] != permOffset + i; j++)
+			if (arr[start + j] < permOffset || arr[start + j] > permOffset + i )
 				k++;
 
 		n = n * (len - i) + k;
 	}
 	return n;
-}
-
-template <typename T, std::size_t Rows, std::size_t Cols>
-std::string join2DArray(const std::array<std::array<T, Cols>, Rows>& arr,
-	const std::string& elemDelimiter = ",",
-	const std::string& rowDelimiter = "\n\t") {
-	std::ostringstream oss;
-	for (std::size_t i = 0; i < Rows; ++i) {
-		for (std::size_t j = 0; j < Cols; ++j) {
-			oss << arr[i][j];
-			if (j != Cols - 1) oss << elemDelimiter;  // Add delimiter for elements in the same row
-		}
-		if (i != Rows - 1) oss << rowDelimiter;       // Add delimiter between rows
-	}
-	return oss.str();
-}
-
-template <typename T, std::size_t N>
-std::string joinArray(const std::array<T, N>& arr, const std::string& delimiter = ",") {
-	std::ostringstream oss;
-	for (std::size_t i = 0; i < arr.size(); ++i) {
-		oss << static_cast<int>(arr[i]);
-		if (i != arr.size() - 1) {  // Add delimiter except for the last element
-			oss << delimiter;
-		}
-	}
-	return oss.str();
-}
-
-std::string KociembaSolver::toString() {
-	std::ostringstream oss;
-	oss << "TransformationEdgeOrient: " << join2DArray(*transformationEdgeOrient) << "\n";
-	oss << "TransformationEdgePerm: " << join2DArray(*transformationEdgePerm) << "\n";
-	oss << "TransformationCornerOrient: " << join2DArray(*transformationCornerOrient) << "\n";
-	oss << "TransformationCornerPerm: " << join2DArray(*transformationCornerPerm) << "\n";
-	oss << "TransformationChoice: " << join2DArray(*transformationChoice) << "\n";
-	oss << "TransformationSlicePerm: " << join2DArray(*transformationSlicePerm) << "\n";
-	oss << "TransformationSlice: " << join2DArray(*transformationSlice) << "\n";
-	oss << "TransformationFace: " << join2DArray(*transformationFace) << "\n";
-	oss << "\n";
-	oss << "PruneEdgeOrient: " << joinArray(*pruneEdgeOrient) << "\n";
-	oss << "PruneEdgePerm: " << joinArray(*pruneEdgePerm) << "\n";
-	oss << "PruneCornerOrient: " << joinArray(*pruneCornerOrient) << "\n";
-	oss << "PruneCornerPerm: " << joinArray(*pruneCornerPerm) << "\n";
-	oss << "PruneChoice: " << joinArray(*pruneChoice) << "\n";
-	oss << "PruneSlicePerm: " << joinArray(*pruneSlicePerm) << "\n";
-	oss << "PruneFace1: " << joinArray(*pruneFace1) << "\n";
-	oss << "PruneFace2: " << joinArray(*pruneFace2);
-	return oss.str();
 }

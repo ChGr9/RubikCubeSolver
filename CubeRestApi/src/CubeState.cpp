@@ -17,16 +17,44 @@ void CubeState::applyMove(int move) {
 	applyMove(move, this->cubeletPermutations, this->cubeletOrientations, this->faceOrientations);
 }
 
-std::array<int, 26> CubeState::getCubeletPermutations() {
+std::array<int, 26> CubeState::getCubeletPermutations() const {
 	return this->cubeletPermutations;
 }
 
-std::array<int, 26> CubeState::getCubeletOrientations() {
+std::array<int, 26> CubeState::getCubeletOrientations() const {
 	return this->cubeletOrientations;
 }
 
-std::array<int, 6> CubeState::getFaceOrientations() {
+std::array<int, 6> CubeState::getFaceOrientations() const {
 	return this->faceOrientations;
+}
+
+bool CubeState::isValid() const {
+	int cornerOrientationSum = 0;
+	for (int i = 0; i < 8; i++)
+		cornerOrientationSum += this->cubeletOrientations[i];
+	if (cornerOrientationSum % 3 != 0)
+		return false;
+
+	int edgeOrientationSum = 0;
+	for (int i = 8; i < 20; i++)
+		edgeOrientationSum += this->cubeletOrientations[i];
+	if (edgeOrientationSum % 2 != 0)
+		return false;
+
+	if (parityOdd(this->cubeletPermutations, 20))
+		return false;
+
+	return true;
+}
+
+bool CubeState::parityOdd(std::span<const int> arr, int len) const {
+	bool odd = false;
+	for (int i = 0; i < len; i++)
+		for (int j = 0; j < len; j++)
+			odd ^= arr[i] < arr[j];
+
+	return odd;
 }
 
 void CubeState::applyMove(int move, std::array<int, 26> cubeletPermutations, std::array<int, 26> cubeletOrientations, std::array<int, 6> faceOrientations) {
@@ -74,7 +102,7 @@ void CubeState::applyMove(int move, std::array<int, 26> cubeletPermutations, std
 	}
 }
 
-void CubeState::reflect(std::array<int, 26> cubeletPermutations, std::array<int, 26> cubeletOrientations, std::array<int, 6> faceOrientations) {
+void CubeState::reflect(std::array<int, 26> cubeletPermutations, std::array<int, 26> cubeletOrientations, std::array<int, 6> faceOrientations) const {
 	int perm[26];
 	int orient[26];
 	int fOrient[6];

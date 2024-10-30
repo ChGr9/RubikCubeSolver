@@ -13,7 +13,7 @@ private:
 	int solutionLength;
 	std::unique_ptr<std::array<int, 40>> solutionMoves;
 	std::unique_ptr<std::array<int, 40>> solutionAmmount;
-	std::unique_ptr<std::array<std::array<int, 10>, 40>> solutionPositions;
+	std::unique_ptr<std::array<std::array<int, 10>, 40>> positions;
 
 	std::unique_ptr<std::array<std::array<int, 6>, 2048>> transformationEdgeOrient;
 	std::unique_ptr<std::array<std::array<int, 6>, 2187>> transformationCornerOrient;
@@ -36,9 +36,14 @@ public:
 	KociembaSolver();
 	~KociembaSolver();
 	void reset();
-	std::string toString();
+	bool setCubeState(const CubeState& cubeState);
 
 private:
+	void resetConfiguration();
+	int calculateEdgeOrientation(const CubeState& cubeState) const;
+	int calculateCornerOrientation(const CubeState& cubeState) const;
+	int calculateMiddleSlice(const CubeState& cubeState) const;
+
 	void initializeParameters();
 	void clearPruneArrays();
 	void initializeTransformations();
@@ -58,7 +63,7 @@ private:
 	void generateNthPermutation(std::span<int> arr, int len, int n);
 	void generateNthPartialPermutation(std::span<int> arr, int len, int permCount, int permOffset, int n);
 	void generateNthCombination(std::span<int> arr, int len, int valueLimit, int n);
-	int getNFromCombination(std::span<int> arr, int len, int valueLimit);
-	int getNFromPermutation(std::span<int> arr, int len);
-	int getNFromPartialPermutation(std::span<int> arr, int len, int permCount, int permOffset);
+	int getNFromCombination(std::span<const int> arr, int len, int valueLimit);
+	int getNFromPermutation(std::span<const int> arr, int len);
+	int getNFromPartialPermutation(std::span<const int> arr, int start, int len, int permCount, int permOffset);
 };

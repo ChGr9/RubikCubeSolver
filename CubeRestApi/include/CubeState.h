@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <span>
 
 class CubeState {
 private:
@@ -60,11 +61,13 @@ public:
     CubeState(std::array<int, 26> cubeletPermutations, std::array<int, 26> cubeletOrientations, std::array<int, 6> faceOrientations);
 	~CubeState();
 	void applyMove(int move);
-	std::array<int, 26> getCubeletPermutations();
-	std::array<int, 26> getCubeletOrientations();
-	std::array<int, 6> getFaceOrientations();
+    std::array<int, 26> getCubeletPermutations() const;
+	std::array<int, 26> getCubeletOrientations() const;
+    std::array<int, 6> getFaceOrientations() const;
+	bool isValid() const;
 private:
+    bool parityOdd(std::span<const int> arr, int len) const;
     void applyMove(int move, std::array<int, 26> cubeletPermutations, std::array<int, 26> cubeletOrientations, std::array<int, 6> faceOrientations);
-    void reflect(std::array<int, 26> cubeletPermutations, std::array<int, 26> cubeletOrientations, std::array<int, 6> faceOrientations);
+    void reflect(std::array<int, 26> cubeletPermutations, std::array<int, 26> cubeletOrientations, std::array<int, 6> faceOrientations) const;
     void sym(int move, std::array<int, 26> cubeletPermutations, std::array<int, 26> cubeletOrientations, std::array<int, 6> faceOrientations);
 };
