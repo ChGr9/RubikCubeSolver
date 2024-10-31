@@ -105,17 +105,17 @@ void KociembaSolver::initializeParameters() {
 }
 
 void KociembaSolver::initializePruneArrays() {
-	pruneEdgeOrient->at(0) = 1;
+	(*pruneEdgeOrient)[0] = 1;
 	initializePruneArray(*pruneEdgeOrient, *transformationEdgeOrient);
-	pruneCornerOrient->at(0) = 1;
+	(*pruneCornerOrient)[0] = 1;
 	initializePruneArray(*pruneCornerOrient, *transformationCornerOrient);
-	pruneChoice->at(240) = 1;
+	(*pruneChoice)[240] = 1;
 	initializePruneArray(*pruneChoice, *transformationChoice);
-	pruneCornerPerm->at(0) = 1;
+	(*pruneCornerPerm)[0] = 1;
 	initializePruneCornerPerm(*pruneCornerPerm, *transformationCornerPerm);
-	pruneEdgePerm->at(0) = 1;
+	(*pruneEdgePerm)[0] = 1;
 	initializePruneArray(*pruneEdgePerm, *transformationEdgePerm);
-	pruneSlicePerm->at(0) = 1;
+	(*pruneSlicePerm)[0] = 1;
 	initializePruneArray(*pruneSlicePerm, *transformationSlicePerm);
 
 	for (int i = 0; i < 4096; i++) {
@@ -502,12 +502,16 @@ int KociembaSolver::getNFromCombination(std::span<const int> arr, int len, int v
 }
 
 int KociembaSolver::getNFromPermutation(std::span<const int> arr, int len) {
+	return getNFromPermutation(arr, 0, len);
+}
+
+int KociembaSolver::getNFromPermutation(std::span<const int> arr, int start, int len) {
 	int n = 0;
 	for (int i = len - 1; i >= 0; i--)
 	{
 		int k = 0;
-		for (int j = i + 1; j < len; j++)
-			if (arr[j] < arr[i])
+		for (int j = start + i + 1; j < start + len; j++)
+			if (arr[start + j] < arr[start + i])
 				k++;
 
 		n = n * (len - i) + k;
@@ -527,4 +531,165 @@ int KociembaSolver::getNFromPartialPermutation(std::span<const int> arr, int sta
 		n = n * (len - i) + k;
 	}
 	return n;
+}
+
+void KociembaSolver::solve() {
+	if (!initialized)
+		throw std::runtime_error("Solver not initialized");
+
+	if(phase1Len >= maxDepth)
+		throw std::runtime_error("Max depth reached");
+
+	while (!search1()) {
+		phase1Len++;
+		if (phase1Len >= maxDepth)
+			throw std::runtime_error("Max depth reached");
+	}
+	maxDepth = solutionLength - 1;
+}
+
+bool KociembaSolver::search1() {
+	if (solutionLength >= phase1Len) {
+		if((*positions)[phase1Len][0] == 0
+			&& (*positions)[phase1Len][1] == 0
+			&& (*positions)[phase1Len][6] == 240)
+			if (solve2()) return true;
+		solutionLength = phase1Len;
+	}
+
+	while (solutionLength >= 0) {
+		int next = solutionLength + 1;
+		int move = (*solutionMoves)[solutionLength];
+		if (move >= 0) {
+			(*positions)[next][0] = (*transformationEdgeOrient)[(*positions)[solutionLength][0]][move];
+			(*positions)[next][1] = (*transformationCornerOrient)[(*positions)[solutionLength][1]][move];
+			(*positions)[next][2] = (*transformationCornerPerm)[(*positions)[solutionLength][2]][move];
+			(*positions)[next][3] = (*transformationSlice)[(*positions)[solutionLength][3]][move];
+			(*positions)[next][4] = (*transformationSlice)[(*positions)[solutionLength][4]][move];
+			(*positions)[next][5] = (*transformationSlice)[(*positions)[solutionLength][5]][move];
+			(*positions)[next][6] = (*transformationChoice)[(*positions)[solutionLength][6]][move];
+		}
+		else {
+			(*positions)[next][0] = (*positions)[solutionLength][0];
+			(*positions)[next][1] = (*positions)[solutionLength][1];
+			(*positions)[next][2] = (*positions)[solutionLength][2];
+			(*positions)[next][3] = (*positions)[solutionLength][3];
+			(*positions)[next][4] = (*positions)[solutionLength][4];
+			(*positions)[next][5] = (*positions)[solutionLength][5];
+			(*positions)[next][6] = (*positions)[solutionLength][6];
+			(*positions)[next][9] = (*positions)[solutionLength][9];
+		}
+		(*solutionAmmount)[solutionLength]++;
+		if ((*solutionAmmount)[solutionLength] > 3) {
+			(*solutionAmmount)[solutionLength] = 0;
+			do {
+				(*solutionMoves)[solutionLength]++;
+			} while (solutionLength != 0 && ((*solutionMoves)[solutionLength] == (*solutionMoves)[solutionLength - 1] || (*solutionMoves)[solutionLength] == (*solutionMoves)[solutionLength - 1] + 3));
+			if ((*solutionAmmount)[solutionLength] == 0)
+				solutionLength--;
+			continue;
+		}
+		if (solutionLength + (*pruneEdgeOrient)[(*positions)[next][0]] < phase1Len + 1
+			&& solutionLength + (*pruneCornerOrient)[(*positions)[next][1]] < phase1Len + 1
+			&& solutionLength + (*pruneChoice)[(*positions)[next][6]] < phase1Len + 1) {
+			(*solutionMoves)[next] = -1;
+			(*solutionAmmount)[next] = 3;
+			solutionLength++;
+			if (solutionLength >= phase1Len)
+				if (solve2()) return true;
+		}
+	}
+	(*solutionMoves)[0] = -1;
+	(*solutionAmmount)[0] = 3;
+	solutionLength = 0;
+	return false;
+}
+
+bool KociembaSolver::solve2() {
+	if (solutionLength > 0)
+		if ((*solutionAmmount)[solutionLength - 1] == 2 || (*solutionAmmount)[solutionLength - 1] == 1 || (*solutionAmmount)[solutionLength - 1] == 4)
+			return false;
+	if (phase1Len + (*pruneCornerPerm)[(*positions)[phase1Len][2]] > maxDepth + 1)
+		return false;
+
+	if(solutionLength > maxDepth)
+		phase2Len = maxDepth - phase1Len;
+	else
+		phase2Len = solutionLength - phase1Len;
+
+	if (phase2Len == 0) {
+		if ((*positions)[phase1Len][2] == 0
+			&& (*positions)[phase1Len][3] == 0
+			&& (*positions)[phase1Len][4] == 5860
+			&& (*positions)[phase1Len][5] == 11720
+			&& (*positions)[phase1Len][9] <= 0)
+			return true;
+
+		std::array<int, 12> edges;
+		edges.fill(-1);
+		generateNthPartialPermutation(edges, 12, 4, 0, (*positions)[phase1Len][3]);
+		generateNthPartialPermutation(edges, 12, 4, 4, (*positions)[phase1Len][4]);
+		generateNthPartialPermutation(edges, 12, 4, 8, (*positions)[phase1Len][5]);
+
+		(*positions)[phase1Len][8] = getNFromPermutation(edges, 4, 4);
+		edges[4] = edges[8];
+		edges[5] = edges[9];
+		edges[6] = edges[10];
+		edges[7] = edges[11];
+		(*positions)[phase1Len][7] = getNFromPermutation(edges, 8);
+	}
+
+	while (!search2()) {
+		phase2Len++;
+		if (phase1Len + phase2Len > maxDepth)
+			return false;
+	}
+	return true;
+}
+
+bool KociembaSolver::search2() {
+	while (solutionLength >= phase1Len) {
+		int next = solutionLength + 1;
+		int move = (*solutionMoves)[solutionLength];
+		if (move == 1 || move == 4) {
+			(*positions)[next][2] = (*transformationCornerPerm)[(*positions)[next][2]][move];
+			(*positions)[next][7] = (*transformationEdgePerm)[(*positions)[next][7]][move];
+		}
+		else if (move >= 0) {
+			(*positions)[next][2] = (*transformationCornerPerm)[(*transformationCornerPerm)[(*positions)[next][2]][move]][move];
+			(*positions)[next][7] = (*transformationEdgePerm)[(*positions)[next][7]][move];
+			(*positions)[next][8] = (*transformationSlicePerm)[(*positions)[next][8]][move];
+		}
+		else {
+			(*positions)[next][2] = (*positions)[solutionLength][2];
+			(*positions)[next][7] = (*positions)[solutionLength][7];
+			(*positions)[next][8] = (*positions)[solutionLength][8];
+			(*positions)[next][9] = (*positions)[solutionLength][9];
+		}
+		(*solutionAmmount)[solutionLength] += (move == 1 || move == 4) ? 1 : 2;
+
+		if ((*solutionAmmount)[solutionLength] > 3) {
+			(*solutionAmmount)[solutionLength] = 0;
+			do {
+				(*solutionMoves)[solutionLength]++;
+			} while (solutionLength != 0 && ((*solutionMoves)[solutionLength] == (*solutionMoves)[solutionLength - 1] || (*solutionMoves)[solutionLength] == (*solutionMoves)[solutionLength - 1] + 3));
+			if ((*solutionAmmount)[solutionLength] >= 6)
+				solutionLength--;
+			continue;
+		}
+
+		if (solutionLength + (*pruneEdgePerm)[(*positions)[next][7]] < phase1Len + phase2Len + 1
+			&& solutionLength + (*pruneCornerPerm)[(*positions)[next][2]] < phase1Len + phase2Len + 1
+			&& solutionLength + (*pruneSlicePerm)[(*positions)[next][8]] < phase1Len + phase2Len + 1) {
+			(*solutionMoves)[next] = -1;
+			(*solutionAmmount)[next] = 3;
+			solutionLength++;
+			if (solutionLength >= phase1Len + phase2Len)
+				return true;
+		}
+		(*solutionMoves)[phase1Len] = -1;
+		(*solutionAmmount)[phase1Len] = 3;
+		solutionLength = phase1Len;
+		return false;
+	}
 }

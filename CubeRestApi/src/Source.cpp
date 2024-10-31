@@ -6,7 +6,8 @@
 
 std::string solve(CubeState cube) {
 	KociembaSolver solver;
-	solver.setCubeState(cube);
+	if (solver.setCubeState(cube))
+		solver.run();
 	return "InProgress";
 }
 

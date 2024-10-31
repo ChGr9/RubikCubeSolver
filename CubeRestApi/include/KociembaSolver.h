@@ -37,6 +37,7 @@ public:
 	~KociembaSolver();
 	void reset();
 	bool setCubeState(const CubeState& cubeState);
+	void solve();
 
 private:
 	void resetConfiguration();
@@ -65,5 +66,10 @@ private:
 	void generateNthCombination(std::span<int> arr, int len, int valueLimit, int n);
 	int getNFromCombination(std::span<const int> arr, int len, int valueLimit);
 	int getNFromPermutation(std::span<const int> arr, int len);
+	int getNFromPermutation(std::span<const int> arr, int start, int len);
 	int getNFromPartialPermutation(std::span<const int> arr, int start, int len, int permCount, int permOffset);
+
+	bool search1();
+	bool solve2();
+	bool search2();
 };
