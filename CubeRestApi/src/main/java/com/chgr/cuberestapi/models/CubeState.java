@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 public class CubeState {
     private final int[] cubeletPermutations = new int[26];
     private final int[] cubeletOrientations = new int[26];
-    private final int[] faceOrientations = new int[6];
 
     private static final int[][] coordinates = {
             {38, 9, 20},
@@ -106,7 +105,6 @@ public class CubeState {
         for(int i =0; i < 6; i++){
             cubeletPermutations[20 + i] = i + 20;
             cubeletOrientations[20 + i] = 0;
-            faceOrientations[i] = 0;
         }
     }
 
@@ -123,13 +121,13 @@ public class CubeState {
         if (edgeOrientationSum % 2 != 0)
             return false;
 
-        return !parityOdd(cubeletPermutations, 20);
+        return !parityOdd(cubeletPermutations);
     }
 
-    private boolean parityOdd(int[] arr, int len) {
+    private boolean parityOdd(int[] arr) {
         boolean odd = false;
-        for (int i = 0; i < len; i++)
-            for (int j = 0; j < len; j++)
+        for (int i = 0; i < 20; i++)
+            for (int j = 0; j < 20; j++)
                 odd ^= arr[i] < arr[j];
 
         return odd;

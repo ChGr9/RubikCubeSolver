@@ -5,8 +5,8 @@ import lombok.Getter;
 public class MoveSequence {
     @Getter
     private int length;
-    private int[] moves;
-    private int[] amount;
+    private final int[] moves;
+    private final int[] amount;
 
     public MoveSequence(int len, int[] moves, int[] amount){
         this.length = len;
@@ -78,136 +78,137 @@ public class MoveSequence {
             turns[0] &= 3;
             turns[1] &= 3;
             turns[2] &= 3;
-            index = ProcessTurns(index, j, turns, axis, type);
+            index = processTurns(index, j, turns, axis, type);
         }
     }
 
-    private int ProcessTurns(Integer i, int j, int[] turns, int[] axis, int[] type) {
-        if (turns[0] == 0 && turns[1] == 0 && turns[2] == 0) { }
-        else if (turns[0] == turns[1] && turns[0] + turns[2] == 4)
-        {
-            amount[i] = turns[0];
-            type[i] = 3;
-            moves[i] = 9 + axis[i];
-            i++;
-        }
-        else if (turns[1] == 0 && turns[2] == 0)
-        {
-            amount[i] = turns[0];
-            type[i] = 0;
-            moves[i] = axis[i];
-            i++;
-        }
-        else if (turns[0] == 0 && turns[1] == 0)
-        {
-            amount[i] = turns[2];
-            type[i] = 1;
-            moves[i] = 3 + axis[i];
-            i++;
-        }
-        else if (turns[0] == 0 && turns[2] == 0)
-        {
-            amount[i] = turns[1];
-            type[i] = 2;
-            moves[i] = 6 + axis[i];
-            i++;
-        }
-        else if (turns[1] == 0 && turns[0] + turns[2] == 4)
-        {
-            amount[i] = turns[0];
-            type[i] = 4;
-            moves[i] = 12 + axis[i];
-            i++;
-        }
-        else if (turns[1] == 0 && turns[0] == turns[2])
-        {
-            amount[i] = turns[0];
-            type[i] = 5;
-            moves[i] = 15 + axis[i];
-            i++;
-        }
-        else if (turns[0] == turns[1])
-        {
-            amount[i] = turns[0];
-            type[i] = 3;
-            moves[i] = 9 + axis[i];
-            i++;
-            amount[i] = (turns[2] + turns[0]) & 3;
-            type[i] = 1;
-            moves[i] = 3 + axis[i];
-            i++;
-        }
-        else if (turns[2] + turns[1] == 4)
-        {
-            amount[i] = turns[1];
-            type[i] = 3;
-            moves[i] = 9 + axis[i];
-            i++;
-            amount[i] = (turns[0] + turns[2]) & 3;
-            type[i] = 0;
-            moves[i] = axis[i];
-            i++;
-        }
-        else if (turns[2] + turns[0] == 4)
-        {
-            amount[i] = turns[1];
-            type[i] = 3;
-            moves[i] = 9 + axis[i];
-            i++;
-            amount[i] = (turns[0] - turns[1]) & 3;
-            type[i] = 4;
-            moves[i] = 12 + axis[i];
-            i++;
-        }
-        else if (((turns[0] - 2 * turns[1] - turns[2]) & 3) == 0)
-        {
-            amount[i] = turns[1];
-            type[i] = 3;
-            moves[i] = 9 + axis[i];
-            i++;
-            amount[i] = (turns[0] - turns[1]) & 3;
-            type[i] = 5;
-            moves[i] = 15 + axis[i];
-            i++;
-        }
-        else if (turns[0] == 0 || turns[1] == 0 || turns[2] == 0)
-        {
-            if (turns[0] != 0)
+    private int processTurns(int i, int j, int[] turns, int[] axis, int[] type) {
+        if (turns[0] != 0 || turns[1] != 0 || turns[2] != 0) {
+            if (turns[0] == turns[1] && turns[0] + turns[2] == 4)
+            {
+                amount[i] = turns[0];
+                type[i] = 3;
+                moves[i] = 9 + axis[i];
+                i++;
+            }
+            else if (turns[1] == 0 && turns[2] == 0)
             {
                 amount[i] = turns[0];
                 type[i] = 0;
                 moves[i] = axis[i];
                 i++;
             }
-            if (turns[1] != 0)
-            {
-                amount[i] = turns[1];
-                type[i] = 2;
-                moves[i] = 6 + axis[i];
-                i++;
-            }
-            if (turns[2] != 0)
+            else if (turns[0] == 0 && turns[1] == 0)
             {
                 amount[i] = turns[2];
                 type[i] = 1;
                 moves[i] = 3 + axis[i];
                 i++;
             }
-        }
-        else
-        {
-            amount[i] = (turns[0] - turns[1]) & 3;
-            type[i] = 0;
-            moves[i] = axis[i];
-            i++;
-            amount[i] = turns[1];
-            type[i] = 3;
-            moves[i] = 9 + axis[i];
-            i++;
-            amount[i] = (turns[1] + turns[2]) & 3;
-            type[i] = 1;
-            moves[i] = 3 + axis[i];
-            i++;
+            else if (turns[0] == 0 && turns[2] == 0)
+            {
+                amount[i] = turns[1];
+                type[i] = 2;
+                moves[i] = 6 + axis[i];
+                i++;
+            }
+            else if (turns[1] == 0 && turns[0] + turns[2] == 4)
+            {
+                amount[i] = turns[0];
+                type[i] = 4;
+                moves[i] = 12 + axis[i];
+                i++;
+            }
+            else if (turns[1] == 0 && turns[0] == turns[2])
+            {
+                amount[i] = turns[0];
+                type[i] = 5;
+                moves[i] = 15 + axis[i];
+                i++;
+            }
+            else if (turns[0] == turns[1])
+            {
+                amount[i] = turns[0];
+                type[i] = 3;
+                moves[i] = 9 + axis[i];
+                i++;
+                amount[i] = (turns[2] + turns[0]) & 3;
+                type[i] = 1;
+                moves[i] = 3 + axis[i];
+                i++;
+            }
+            else if (turns[2] + turns[1] == 4)
+            {
+                amount[i] = turns[1];
+                type[i] = 3;
+                moves[i] = 9 + axis[i];
+                i++;
+                amount[i] = (turns[0] + turns[2]) & 3;
+                type[i] = 0;
+                moves[i] = axis[i];
+                i++;
+            }
+            else if (turns[2] + turns[0] == 4)
+            {
+                amount[i] = turns[1];
+                type[i] = 3;
+                moves[i] = 9 + axis[i];
+                i++;
+                amount[i] = (turns[0] - turns[1]) & 3;
+                type[i] = 4;
+                moves[i] = 12 + axis[i];
+                i++;
+            }
+            else if (((turns[0] - 2 * turns[1] - turns[2]) & 3) == 0)
+            {
+                amount[i] = turns[1];
+                type[i] = 3;
+                moves[i] = 9 + axis[i];
+                i++;
+                amount[i] = (turns[0] - turns[1]) & 3;
+                type[i] = 5;
+                moves[i] = 15 + axis[i];
+                i++;
+            }
+            else if (turns[0] == 0 || turns[1] == 0 || turns[2] == 0)
+            {
+                if (turns[0] != 0)
+                {
+                    amount[i] = turns[0];
+                    type[i] = 0;
+                    moves[i] = axis[i];
+                    i++;
+                }
+                if (turns[1] != 0)
+                {
+                    amount[i] = turns[1];
+                    type[i] = 2;
+                    moves[i] = 6 + axis[i];
+                    i++;
+                }
+                if (turns[2] != 0)
+                {
+                    amount[i] = turns[2];
+                    type[i] = 1;
+                    moves[i] = 3 + axis[i];
+                    i++;
+                }
+            }
+            else
+            {
+                amount[i] = (turns[0] - turns[1]) & 3;
+                type[i] = 0;
+                moves[i] = axis[i];
+                i++;
+                amount[i] = turns[1];
+                type[i] = 3;
+                moves[i] = 9 + axis[i];
+                i++;
+                amount[i] = (turns[1] + turns[2]) & 3;
+                type[i] = 1;
+                moves[i] = 3 + axis[i];
+                i++;
+            }
         }
 
         length -= j - i;

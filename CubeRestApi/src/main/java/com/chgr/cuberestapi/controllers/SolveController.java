@@ -37,7 +37,6 @@ public class SolveController {
     private String solve(CubeState cubeState) {
         KociembaSolver solver = new KociembaSolver();
         solver.setCubeState(cubeState);
-        //return solver.print();
         if(solver.solve()){
             MoveSequence generator = solver.getGenerator();
             List<String> result = new ArrayList<>();

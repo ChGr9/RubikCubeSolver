@@ -21,7 +21,6 @@ public class KociembaSolver {
     private final int[][] transformationSlice = new int[11880][6];
     private final int[][] transformationChoice = new int[2048][6];
     private final int[][] transformationSlicePerm = new int[24][6];
-    private final int[][] transformationFace = new int[4096][6];
 
     private final byte[] pruneEdgeOrient = new byte[2048];
     private final byte[] pruneCornerOrient = new byte[2187];
@@ -29,8 +28,6 @@ public class KociembaSolver {
     private final byte[] pruneCornerPerm = new byte[40320];
     private final byte[] pruneChoice = new byte[2048];
     private final byte[] pruneSlicePerm = new byte[24];
-    private final byte[] pruneFace1 = new byte[4096];
-    private final byte[] pruneFace2 = new byte[4096];
 
     public KociembaSolver(){
         phase1Len = 0;
@@ -58,22 +55,6 @@ public class KociembaSolver {
         initializePruneArray(pruneEdgePerm, transformationEdgePerm);
         pruneSlicePerm[0] = 1;
         initializePruneArray(pruneSlicePerm, transformationSlicePerm);
-
-        for (int i = 0; i < 4096; i++)
-        {
-            pruneFace1[i] = 1;
-            if ((i & 1) != 0) pruneFace1[i]++;
-            if ((i & 16) != 0) pruneFace1[i]++;
-            if ((i & 64) != 0) pruneFace1[i]++;
-            if ((i & 1024) != 0) pruneFace1[i]++;
-            pruneFace2[i] = 1;
-            if ((i & 3) != 0) pruneFace2[i]++;
-            if ((i & 12) != 0) pruneFace2[i]++;
-            if ((i & 48) != 0) pruneFace2[i]++;
-            if ((i & 192) != 0) pruneFace2[i]++;
-            if ((i & 768) != 0) pruneFace2[i]++;
-            if ((i & 3072) != 0) pruneFace2[i]++;
-        }
     }
 
     private void initializePruneArray(byte[] pruneArray, int[][] transformationArray) {
@@ -138,147 +119,138 @@ public class KociembaSolver {
         for (int i = 0; i < 24; i++)
             for (int m = 0; m < 6; m++)
                 transformationSlicePerm[i][m] = getTransformationSlicePerm(i, m);
-
-        for(int i = 0; i < 4096; i++){
-            transformationFace[i][0] = ((i + (3 << 10)) & (1 << 12) - 1);
-            transformationFace[i][1] = ((i + (3 << 8)) & ((1 << 10) - 1)) + (i & ((1 << 12) - (1 << 10)));
-            transformationFace[i][2] = ((i + (3 << 6)) & ((1 << 8) - 1)) + (i & ((1 << 12) - (1 << 8)));
-            transformationFace[i][3] = ((i + (3 << 4)) & ((1 << 6) - 1)) + (i & ((1 << 12) - (1 << 6)));
-            transformationFace[i][4] = ((i + (3 << 2)) & ((1 << 4) - 1)) + (i & ((1 << 12) - (1 << 4)));
-            transformationFace[i][5] = ((i + (3)) & ((1 << 2) - 1)) + (i & ((1 << 12) - (1 << 2)));
-        }
     }
 
     private int getTransformationEdgeOrient(int pos, int m)
     {
         int[] edges = new int[12];
-        Num2Ori(edges, 0, 12, 2, pos);
+        generateNthCombination(edges, 12, 2, pos);
 
         if (m == 3)
         {
-            Cycle(edges, 0, 5, 8, 4);
+            cycle(edges, 0, 5, 8, 4);
             edges[0] ^= 1; edges[5] ^= 1; edges[8] ^= 1; edges[4] ^= 1;
         }
         else if (m == 2)
         {
-            Cycle(edges, 1, 6, 9, 5);
+            cycle(edges, 1, 6, 9, 5);
         }
         else if (m == 0)
         {
-            Cycle(edges, 2, 7, 10, 6);
+            cycle(edges, 2, 7, 10, 6);
             edges[2] ^= 1; edges[7] ^= 1; edges[10] ^= 1; edges[6] ^= 1;
         }
         else if (m == 5)
         {
-            Cycle(edges, 3, 4, 11, 7);
+            cycle(edges, 3, 4, 11, 7);
         }
         else if (m == 1)
         {
-            Cycle(edges, 3, 2, 1, 0);
+            cycle(edges, 3, 2, 1, 0);
         }
         else if (m == 4)
         {
-            Cycle(edges, 8, 9, 10, 11);
+            cycle(edges, 8, 9, 10, 11);
         }
-        return Ori2Num(edges, 0, 12, 2);
+        return getNFromCombination(edges, 12, 2);
     }
 
     private int getTransformationCornerOrient(int pos, int m)
     {
         int[] corners = new int[8];
-        Num2Ori(corners, 0, 8, 3, pos);
+        generateNthCombination(corners, 8, 3, pos);
 
         if (m == 3)
         {
-            Cycle(corners, 0, 1, 5, 4);
+            cycle(corners, 0, 1, 5, 4);
             corners[0] += 2; corners[1]++; corners[5] += 2; corners[4]++;
         }
         else if (m == 2)
         {
-            Cycle(corners, 1, 2, 6, 5);
+            cycle(corners, 1, 2, 6, 5);
             corners[1] += 2; corners[2]++; corners[6] += 2; corners[5]++;
         }
         else if (m == 0)
         {
-            Cycle(corners, 2, 3, 7, 6);
+            cycle(corners, 2, 3, 7, 6);
             corners[2] += 2; corners[3]++; corners[7] += 2; corners[6]++;
         }
         else if (m == 5)
         {
-            Cycle(corners, 3, 0, 4, 7);
+            cycle(corners, 3, 0, 4, 7);
             corners[3] += 2; corners[0]++; corners[4] += 2; corners[7]++;
         }
         else if (m == 1)
         {
-            Cycle(corners, 3, 2, 1, 0);
+            cycle(corners, 3, 2, 1, 0);
         }
         else if (m == 4)
         {
-            Cycle(corners, 4, 5, 6, 7);
+            cycle(corners, 4, 5, 6, 7);
         }
-        return Ori2Num(corners, 0, 8, 3);
+        return getNFromCombination(corners, 8, 3);
     }
 
     private int getTransformationCornerPerm(int pos, int m)
     {
         int[] corners = new int[8];
-        Num2Perm(corners, 0, 8, pos);
+        generateNthPermutation(corners, 8, pos);
         if (m == 3)
         {
-            Cycle(corners, 0, 1, 5, 4);
+            cycle(corners, 0, 1, 5, 4);
         }
         else if (m == 2)
         {
-            Cycle(corners, 1, 2, 6, 5);
+            cycle(corners, 1, 2, 6, 5);
         }
         else if (m == 0)
         {
-            Cycle(corners, 2, 3, 7, 6);
+            cycle(corners, 2, 3, 7, 6);
         }
         else if (m == 5)
         {
-            Cycle(corners, 3, 0, 4, 7);
+            cycle(corners, 3, 0, 4, 7);
         }
         else if (m == 1)
         {
-            Cycle(corners, 3, 2, 1, 0);
+            cycle(corners, 3, 2, 1, 0);
         }
         else if (m == 4)
         {
-            Cycle(corners, 4, 5, 6, 7);
+            cycle(corners, 4, 5, 6, 7);
         }
-        return Perm2Num(corners, 0, 8);
+        return getNFromPermutation(corners, 8);
     }
 
     private int getTransformationEdgePerm(int pos, int m)
     {
         int[] edges = new int[8];
-        Num2Perm(edges, 0, 8, pos);
+        generateNthPermutation(edges, 8, pos);
         if (m == 3)
         {
-            Swap(edges, 0, 4);
+            swap(edges, 0, 4);
         }
         else if (m == 2)
         {
-            Swap(edges, 1, 5);
+            swap(edges, 1, 5);
         }
         else if (m == 0)
         {
-            Swap(edges, 2, 6);
+            swap(edges, 2, 6);
         }
         else if (m == 5)
         {
-            Swap(edges, 3, 7);
+            swap(edges, 3, 7);
         }
         else if (m == 1)
         {
-            Cycle(edges, 3, 2, 1, 0);
+            cycle(edges, 3, 2, 1, 0);
         }
         else if (m == 4)
         {
-            Cycle(edges, 4, 5, 6, 7);
+            cycle(edges, 4, 5, 6, 7);
         }
-        return Perm2Num(edges, 0, 8);
+        return getNFromPermutation(edges, 8);
     }
 
     private int getTransformationSlice(int pos, int m)
@@ -298,27 +270,27 @@ public class KociembaSolver {
 
         if (m == 3)
         {
-            Cycle(edges, 0, 5, 8, 4);
+            cycle(edges, 0, 5, 8, 4);
         }
         else if (m == 2)
         {
-            Cycle(edges, 1, 6, 9, 5);
+            cycle(edges, 1, 6, 9, 5);
         }
         else if (m == 0)
         {
-            Cycle(edges, 2, 7, 10, 6);
+            cycle(edges, 2, 7, 10, 6);
         }
         else if (m == 5)
         {
-            Cycle(edges, 3, 4, 11, 7);
+            cycle(edges, 3, 4, 11, 7);
         }
         else if (m == 1)
         {
-            Cycle(edges, 3, 2, 1, 0);
+            cycle(edges, 3, 2, 1, 0);
         }
         else if (m == 4)
         {
-            Cycle(edges, 8, 9, 10, 11);
+            cycle(edges, 8, 9, 10, 11);
         }
         pos = 0;
         for (i = 3; i >= 0; i--)
@@ -336,164 +308,154 @@ public class KociembaSolver {
     private int getTransformationSlicePerm(int pos, int m)
     {
         int[] edges = new int[4];
-        Num2Perm(edges, 0, 4, pos);
+        generateNthPermutation(edges, 4, pos);
         if (m == 3)
         {
-            Swap(edges, 0, 1);
+            swap(edges, 0, 1);
         }
         else if (m == 2)
         {
-            Swap(edges, 1, 2);
+            swap(edges, 1, 2);
         }
         else if (m == 0)
         {
-            Swap(edges, 2, 3);
+            swap(edges, 2, 3);
         }
         else if (m == 5)
         {
-            Swap(edges, 3, 0);
+            swap(edges, 3, 0);
         }
-        return Perm2Num(edges, 0, 4);
+        return getNFromPermutation(edges, 4);
     }
 
     private int getTransformationChoice(int pos, int m)
     {
         int[] edges = new int[12];
-        Num2Ori(edges, 0, 12, 2, pos);
+        generateNthCombination(edges, 12, 2, pos);
 
         if (m == 3)
         {
-            Cycle(edges, 0, 5, 8, 4);
+            cycle(edges, 0, 5, 8, 4);
         }
         else if (m == 2)
         {
-            Cycle(edges, 1, 6, 9, 5);
+            cycle(edges, 1, 6, 9, 5);
         }
         else if (m == 0)
         {
-            Cycle(edges, 2, 7, 10, 6);
+            cycle(edges, 2, 7, 10, 6);
         }
         else if (m == 5)
         {
-            Cycle(edges, 3, 4, 11, 7);
+            cycle(edges, 3, 4, 11, 7);
         }
         else if (m == 1)
         {
-            Cycle(edges, 3, 2, 1, 0);
+            cycle(edges, 3, 2, 1, 0);
         }
         else if (m == 4)
         {
-            Cycle(edges, 8, 9, 10, 11);
+            cycle(edges, 8, 9, 10, 11);
         }
-        return (Ori2Num(edges, 0, 12, 2));
+        return (getNFromCombination(edges, 12, 2));
     }
 
-    private void Swap(int[] pr, int i, int j)
+    private void swap(int[] pr, int i, int j)
     {
-        int c = pr[i];
+        int temp = pr[i];
         pr[i] = pr[j];
-        pr[j] = c;
+        pr[j] = temp;
     }
 
-    private void Cycle(int[] pr, int i, int j, int k, int l)
+    private void cycle(int[] pr, int i, int j, int k, int l)
     {
-        int c = pr[i];
+        int temp = pr[i];
         pr[i] = pr[j];
         pr[j] = pr[k];
         pr[k] = pr[l];
-        pr[l] = c;
+        pr[l] = temp;
     }
 
-    private static boolean ParityOdd(int[] pieces, int start, int len)
+    private static void generateNthPermutation(int[] arr, int len, int n)
     {
-        int i, j;
-        boolean p = false;
-        for (i = 0; i < len; i++)
+        int[] numbers = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+        for (int i = 0; i < len; i++)
         {
-            for (j = 0; j < i; j++)
+            int value = n % (len - i);
+            n = (n - value) / (len - i);
+            arr[i] = numbers[value];
+            while (++value < len)
+                numbers[value - 1] = numbers[value];
+        }
+    }
+
+    private void generateNthPartialPermutation(int[] arr, int permOffset, int n)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            int value = n % (arr.length - i);
+            n = (n - value) / (arr.length - i);
+            int j;
+            for (j = 0; j < arr.length && ((arr[j] >= permOffset && arr[j] < permOffset + 4) || value > 0); j++)
             {
-                p ^= pieces[start + i] < pieces[start + j];
+                if (arr[j] < permOffset || arr[j] >= permOffset + 4)
+                    value--;
             }
-        }
-        return p;
-    }
-
-    private static void Num2Perm(int[] pieces, int start, int len, int pos)
-    {
-        int i, r;
-        int[] w = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
-        for (i = 0; i < len; i++)
-        {
-            r = pos % (len - i);
-            pos = (pos - r) / (len - i);
-            pieces[start + i] = w[r];
-            while (++r < len) w[r - 1] = w[r];
+            arr[j] = permOffset + i;
         }
     }
 
-    private void Num2PartPerm(int[] pieces, int start, int len, int np, int p0, int pos)
+    private static void generateNthCombination(int[] arr, int len, int valueLimit, int n)
     {
-        int i, j, r;
-        for (i = 0; i < np; i++)
+        int j = 0;
+        for (int i = 0; i < len - 1; i++)
         {
-            r = pos % (len - i);
-            pos = (pos - r) / (len - i);
-            for (j = start; j < start + len && ((pieces[j] >= p0 && pieces[j] < p0 + np) || r > 0); j++)
-            {
-                if (pieces[j] < p0 || pieces[j] >= p0 + np) r--;
-            }
-            pieces[j] = p0 + i;
+            int value = n % valueLimit;
+            j += valueLimit - value;
+            n = (n - value) / valueLimit;
+            arr[i] = value;
         }
+        arr[len - 1] = j % valueLimit;
     }
 
-    private static void Num2Ori(int[] pieces, int start, int len, int val, int pos)
+    private int getNFromCombination(int[] arr, int len, int valueLimit)
     {
-        int i, j = 0, k;
-        for (i = 0; i < len - 1; i++)
-        {
-            k = pos % val;
-            j += val - k;
-            pos = (pos - k) / val;
-            pieces[start + i] = k;
-        }
-        pieces[start + len - 1] = j % val;
+        int n = 0;
+        for (int i = len - 2; i >= 0; i--)
+            n = n * valueLimit + (arr[i] % valueLimit);
+        return n;
     }
 
-    private int Ori2Num(int[] pieces, int start, int len, int val)
-    {
-        int i, j = 0;
-        for (i = len - 2; i >= 0; i--) j = j * val + (pieces[start + i] % val);
-        return (j);
+    private int getNFromPermutation(int[] arr, int len) {
+        return getNFromPermutation(arr, 0, len);
     }
 
-    private int Perm2Num(int[] pieces, int start, int len)
+    private int getNFromPermutation(int[] arr, int start, int len)
     {
-        int i, j, r;
-        int p = 0;
-        for (i = len - 1; i >= 0; i--)
+        int n = 0;
+        for (int i = len - 1; i >= 0; i--)
         {
-            r = 0;
-            for (j = i + 1; j < len; j++)
-            {
-                if (pieces[start + j] < pieces[start + i]) { r++; }
-            }
-            p = p * (len - i) + r;
+            int value = 0;
+            for (int j = i + 1; j < len; j++)
+                if (arr[start + j] < arr[start + i])
+                    value++;
+
+            n = n * (len - i) + value;
         }
-        return p;
+        return n;
     }
-    private int PartPerm2Num(int[] perm, int start, int len, int permCount, int permOffset)
+    private int getNFromPartialPermutation(int[] perm, int start, int len, int permCount, int permOffset)
     {
-        int i, j, r, pos = 0;
-        for (i = permCount - 1; i >= 0; i--)
+        int n = 0;
+        for (int i = permCount - 1; i >= 0; i--)
         {
-            r = 0;
-            for (j = 0; j < len && perm[start + j] != permOffset + i; j++)
-            {
-                if (perm[start + j] < permOffset || perm[start + j] > permOffset + i) r++;
-            }
-            pos = pos * (len - i) + r;
+            int value = 0;
+            for (int j = 0; j < len && perm[start + j] != permOffset + i; j++)
+                if (perm[start + j] < permOffset || perm[start + j] > permOffset + i)
+                    value++;
+            n = n * (len - i) + value;
         }
-        return (pos);
+        return n;
     }
 
     public void setCubeState(CubeState cubeState){
@@ -504,10 +466,10 @@ public class KociembaSolver {
 
         positions[0][0] = calculateEdgeOrientation(cubeState);
         positions[0][1] = calculateCornerOrientation(cubeState);
-        positions[0][2] = Perm2Num(cubeState.getCubeletPermutations(), 0, 8);
-        positions[0][3] = PartPerm2Num(cubeState.getCubeletPermutations(), 8, 12, 4, 8);
-        positions[0][4] = PartPerm2Num(cubeState.getCubeletPermutations(), 8, 12, 4, 12);
-        positions[0][5] = PartPerm2Num(cubeState.getCubeletPermutations(), 8, 12, 4, 16);
+        positions[0][2] = getNFromPermutation(cubeState.getCubeletPermutations(), 8);
+        positions[0][3] = getNFromPartialPermutation(cubeState.getCubeletPermutations(), 8, 12, 4, 8);
+        positions[0][4] = getNFromPartialPermutation(cubeState.getCubeletPermutations(), 8, 12, 4, 12);
+        positions[0][5] = getNFromPartialPermutation(cubeState.getCubeletPermutations(), 8, 12, 4, 16);
         positions[0][6] = calculateMiddleSlice(cubeState);
         positions[0][9] = -1;
         
@@ -573,48 +535,41 @@ public class KociembaSolver {
 
         while (solutionLength >= 0)
         {
-            int nxt = solutionLength + 1;
-            int m = solutionMoves[solutionLength];
-            if (m >= 0)
+            int next = solutionLength + 1;
+            int move = solutionMoves[solutionLength];
+            if (move >= 0)
             {
-                positions[nxt][0] = transformationEdgeOrient[positions[nxt][0]][m];
-                positions[nxt][1] = transformationCornerOrient[positions[nxt][1]][m];
-                positions[nxt][2] = transformationCornerPerm[positions[nxt][2]][m];
-                positions[nxt][3] = transformationSlice[positions[nxt][3]][m];
-                positions[nxt][4] = transformationSlice[positions[nxt][4]][m];
-                positions[nxt][5] = transformationSlice[positions[nxt][5]][m];
-                positions[nxt][6] = transformationChoice[positions[nxt][6]][m];
+                positions[next][0] = transformationEdgeOrient[positions[next][0]][move];
+                positions[next][1] = transformationCornerOrient[positions[next][1]][move];
+                positions[next][2] = transformationCornerPerm[positions[next][2]][move];
+                positions[next][3] = transformationSlice[positions[next][3]][move];
+                positions[next][4] = transformationSlice[positions[next][4]][move];
+                positions[next][5] = transformationSlice[positions[next][5]][move];
+                positions[next][6] = transformationChoice[positions[next][6]][move];
             }
             else
             {
-                positions[nxt][0] = positions[solutionLength][0];
-                positions[nxt][1] = positions[solutionLength][1];
-                positions[nxt][2] = positions[solutionLength][2];
-                positions[nxt][3] = positions[solutionLength][3];
-                positions[nxt][4] = positions[solutionLength][4];
-                positions[nxt][5] = positions[solutionLength][5];
-                positions[nxt][6] = positions[solutionLength][6];
-                positions[nxt][9] = positions[solutionLength][9];
+                positions[next][0] = positions[solutionLength][0];
+                positions[next][1] = positions[solutionLength][1];
+                positions[next][2] = positions[solutionLength][2];
+                positions[next][3] = positions[solutionLength][3];
+                positions[next][4] = positions[solutionLength][4];
+                positions[next][5] = positions[solutionLength][5];
+                positions[next][6] = positions[solutionLength][6];
+                positions[next][9] = positions[solutionLength][9];
             }
             solutionAmounts[solutionLength]++;
             if (solutionAmounts[solutionLength] > 3) {
-                solutionAmounts[solutionLength] = 0;
-                do {
-                    solutionMoves[solutionLength]++;
-                } while (solutionLength != 0 && (solutionMoves[solutionLength] == solutionMoves[solutionLength - 1] || solutionMoves[solutionLength] == solutionMoves[solutionLength - 1] + 3));
-                if (solutionMoves[solutionLength] >= 6) {
-                    solutionLength--;
-                    continue;
-                }
+                advanceSolutionMove();
                 continue;
             }
 
-            if (solutionLength + pruneEdgeOrient[positions[nxt][0]] < phase1Len + 1
-                && solutionLength + pruneCornerOrient[positions[nxt][1]] < phase1Len + 1
-                && solutionLength + pruneChoice[positions[nxt][6]] < phase1Len + 1) {
-                solutionMoves[nxt] = -1;
-                solutionAmounts[nxt] = 3;
-                solutionLength = nxt;
+            if (solutionLength + pruneEdgeOrient[positions[next][0]] < phase1Len + 1
+                && solutionLength + pruneCornerOrient[positions[next][1]] < phase1Len + 1
+                && solutionLength + pruneChoice[positions[next][6]] < phase1Len + 1) {
+                solutionMoves[next] = -1;
+                solutionAmounts[next] = 3;
+                solutionLength = next;
                 if (solutionLength >= phase1Len)
                     if (solve2())
                         return true;
@@ -651,14 +606,14 @@ public class KociembaSolver {
                 return true;
 
             int[] edges = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-            Num2PartPerm(edges, 0, 12, 4, 0, positions[phase1Len][3]);
-            Num2PartPerm(edges, 0, 12, 4, 4, positions[phase1Len][4]);
-            Num2PartPerm(edges, 0, 12, 4, 8, positions[phase1Len][5]);
+            generateNthPartialPermutation(edges, 0, positions[phase1Len][3]);
+            generateNthPartialPermutation(edges, 4, positions[phase1Len][4]);
+            generateNthPartialPermutation(edges, 8, positions[phase1Len][5]);
 
-            positions[phase1Len][8] = Perm2Num(edges, 4, 4);
+            positions[phase1Len][8] = getNFromPermutation(edges, 4, 4);
             edges[4] = edges[8]; edges[5] = edges[9];
             edges[6] = edges[10]; edges[7] = edges[11];
-            positions[phase1Len][7] = Perm2Num(edges, 0, 8);
+            positions[phase1Len][7] = getNFromPermutation(edges, 8);
 
         }
 
@@ -675,49 +630,40 @@ public class KociembaSolver {
     {
         while (solutionLength >= phase1Len)
         {
-            int nxt = solutionLength + 1;
-            int m = solutionMoves[solutionLength];
-            if (m == 1 || m == 4)
+            int next = solutionLength + 1;
+            int move = solutionMoves[solutionLength];
+            if (move == 1 || move == 4)
             {
-                positions[nxt][2] = transformationCornerPerm[positions[nxt][2]][m];
-                positions[nxt][7] = transformationEdgePerm[positions[nxt][7]][m];
+                positions[next][2] = transformationCornerPerm[positions[next][2]][move];
+                positions[next][7] = transformationEdgePerm[positions[next][7]][move];
             }
-            else if (m >= 0)
+            else if (move >= 0)
             {
-                positions[nxt][2] = transformationCornerPerm[transformationCornerPerm[positions[nxt][2]][m]][m];
-                positions[nxt][7] = transformationEdgePerm[positions[nxt][7]][m];
-                positions[nxt][8] = transformationSlicePerm[positions[nxt][8]][m];
+                positions[next][2] = transformationCornerPerm[transformationCornerPerm[positions[next][2]][move]][move];
+                positions[next][7] = transformationEdgePerm[positions[next][7]][move];
+                positions[next][8] = transformationSlicePerm[positions[next][8]][move];
             }
             else
             {
-                positions[nxt][2] = positions[solutionLength][2];
-                positions[nxt][7] = positions[solutionLength][7];
-                positions[nxt][8] = positions[solutionLength][8];
-                positions[nxt][9] = positions[solutionLength][9];
+                positions[next][2] = positions[solutionLength][2];
+                positions[next][7] = positions[solutionLength][7];
+                positions[next][8] = positions[solutionLength][8];
+                positions[next][9] = positions[solutionLength][9];
             }
-            solutionAmounts[solutionLength] += (m == 1 || m == 4) ? 1 : 2;
+            solutionAmounts[solutionLength] += (move == 1 || move == 4) ? 1 : 2;
             if (solutionAmounts[solutionLength] > 3)
             {
-                solutionAmounts[solutionLength] = 0;
-                do
-                {
-                    solutionMoves[solutionLength]++;
-                } while (solutionLength != 0 && (solutionMoves[solutionLength] == solutionMoves[solutionLength - 1] || solutionMoves[solutionLength] == solutionMoves[solutionLength - 1] + 3));
-                if (solutionMoves[solutionLength] >= 6)
-                {
-                    solutionLength--;
-                    continue;
-                }
+                advanceSolutionMove();
                 continue;
             }
 
-            if (solutionLength + pruneEdgePerm[positions[nxt][7]] < phase1Len + phase2Len + 1 &&
-                solutionLength + pruneCornerPerm[positions[nxt][2]] < phase1Len + phase2Len + 1 &&
-                solutionLength + pruneSlicePerm[positions[nxt][8]] < phase1Len + phase2Len + 1)
+            if (solutionLength + pruneEdgePerm[positions[next][7]] < phase1Len + phase2Len + 1 &&
+                solutionLength + pruneCornerPerm[positions[next][2]] < phase1Len + phase2Len + 1 &&
+                solutionLength + pruneSlicePerm[positions[next][8]] < phase1Len + phase2Len + 1)
             {
-                solutionMoves[nxt] = -1;
-                solutionAmounts[nxt] = 3;
-                solutionLength = nxt;
+                solutionMoves[next] = -1;
+                solutionAmounts[next] = 3;
+                solutionLength = next;
                 if (solutionLength >= phase1Len + phase2Len)
                     return true;
             }
@@ -728,49 +674,19 @@ public class KociembaSolver {
         return false;
     }
 
+    private void advanceSolutionMove() {
+        solutionAmounts[solutionLength] = 0;
+        do
+        {
+            solutionMoves[solutionLength]++;
+        } while (solutionLength != 0 && (solutionMoves[solutionLength] == solutionMoves[solutionLength - 1] || solutionMoves[solutionLength] == solutionMoves[solutionLength - 1] + 3));
+        if (solutionMoves[solutionLength] >= 6)
+        {
+            solutionLength--;
+        }
+    }
+
     public MoveSequence getGenerator() {
         return new MoveSequence(solutionLength, solutionMoves, solutionAmounts);
-    }
-
-    public String print() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Edge orientation: ").append(array2d(transformationEdgeOrient)).append("\r\n");
-        sb.append("Corner orientation: ").append(array2d(transformationCornerOrient)).append("\r\n");
-        sb.append("Edge permutation: ").append(array2d(transformationEdgePerm)).append("\r\n");
-        sb.append("Corner permutation: ").append(array2d(transformationCornerPerm)).append("\r\n");
-        sb.append("Slice: ").append(array2d(transformationSlice)).append("\r\n");
-        sb.append("Choice: ").append(array2d(transformationChoice)).append("\r\n");
-        sb.append("Slice permutation: ").append(array2d(transformationSlicePerm)).append("\r\n");
-        sb.append("Face: ").append(array2d(transformationFace)).append("\r\n");
-
-        sb.append("Edge orientation prune: ").append(array1d(pruneEdgeOrient)).append("\r\n");
-        sb.append("Corner orientation prune: ").append(array1d(pruneCornerOrient)).append("\r\n");
-        sb.append("Edge permutation prune: ").append(array1d(pruneEdgePerm)).append("\r\n");
-        sb.append("Corner permutation prune: ").append(array1d(pruneCornerPerm)).append("\r\n");
-        sb.append("Choice prune: ").append(array1d(pruneChoice)).append("\r\n");
-        sb.append("Slice permutation prune: ").append(array1d(pruneSlicePerm)).append("\r\n");
-        sb.append("Face 1 prune: ").append(array1d(pruneFace1)).append("\r\n");
-        sb.append("Face 2 prune: ").append(array1d(pruneFace2)).append("\r\n");
-        return sb.toString();
-    }
-
-    private String array2d(int[][] arr) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < arr.length; i++) {
-            for (int elem : arr[i]) {
-                sb.append(elem).append(",");
-            }
-            if(i < arr.length - 1)
-                sb.append(" | ");
-        }
-        return sb.toString();
-    }
-
-    private String array1d(byte[] arr) {
-        StringBuilder sb = new StringBuilder();
-        for (byte elem : arr) {
-            sb.append(elem).append(",");
-        }
-        return sb.toString();
     }
 }
