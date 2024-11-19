@@ -3,7 +3,6 @@ package com.chgr.cuberestapi.controllers;
 import com.chgr.cuberestapi.models.CubeState;
 import com.chgr.cuberestapi.models.MoveSequence;
 import com.chgr.cuberestapi.services.KociembaSolver;
-import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,12 +24,9 @@ public class SolveController {
 
         CubeState cubeState = new CubeState(cube);
 
-        StopWatch stopWatch = StopWatch.createStarted();
         String solution = solve(cubeState);
         if(solution.isBlank())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No solution found");
-        stopWatch.stop();
-        System.out.println("Solver took " + stopWatch.getTime() + " ms");
         return solution;
     }
 
