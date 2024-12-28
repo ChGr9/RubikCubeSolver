@@ -14,6 +14,11 @@ void DisplayManager::init() {
     display.sendBuffer();
 }
 
+void DisplayManager::print(char c, int x, int y, Style style) {
+    char text[2] = {c, '\0'};
+    drawString(text, x, y, style);
+}
+
 void DisplayManager::print(const char* text, int x, int y, Style style) {
     drawString(text, x, y, style);
 }
@@ -115,7 +120,7 @@ void DisplayManager::drawString(const char* text, int x, int y, Style style) {
     case INVERTED:
     {
         const int boxPadding = 1;
-        display.drawBox(x - boxPadding, y - display.getAscent() - boxPadding, display.getStrWidth(text) + boxPadding * 2 , getLineHeight() + boxPadding * 2);
+        display.drawBox(x - boxPadding, y - display.getAscent() - boxPadding, display.getStrWidth(text) + boxPadding * 2 , getLineHeight() + boxPadding);
         display.setDrawColor(0);
         display.drawStr(x, y, text);
         display.setDrawColor(1);

@@ -7,6 +7,7 @@
 #include "ServoManager.h"
 #include "PageManager.h"
 #include "pages/ListMenuPage.h"
+#include "CubeState.h"
 
 #define ROTARY_PIN_SW   18
 #define ROTARY_PIN_DT   19
@@ -15,7 +16,8 @@
 int lastPosition = 0;
 
 Preferences preferences;
-PageManager* pageManager;
+CubeState cubeState;
+PageManager pageManager(cubeState);
 ESP32Encoder encoder;
 Button2 encoderButton(ROTARY_PIN_SW);
 
@@ -57,7 +59,7 @@ void encoderLoop() {
   if (currentPosition != lastPosition) {
     int delta = currentPosition - lastPosition;
     delta = delta > 0 ? 1 : -1;
-    pageManager->increment(delta);
+    pageManager.increment(delta);
     lastPosition = currentPosition;
   }
 }
@@ -66,8 +68,8 @@ void setup() {
   Serial.begin(9600);
   DisplayManager::init();
   preferences.begin("network", false);
-  String ssid = preferences.getString("ssid", "CYTA_GG");
-  String password = preferences.getString("password", "kaniPelares96*99");
+  String ssid = preferences.getString("ssid", "");
+  String password = preferences.getString("password", "");
   WiFi.begin(ssid, password);
   int progress = 0;
   while (WiFi.status() != WL_CONNECTED) {
@@ -95,12 +97,9 @@ void setup() {
   pinMode(ROTARY_PIN_SW, INPUT_PULLUP);
   encoderButton.setDebounceTime(50);
   encoderButton.setClickHandler([](Button2 &btn) {
-    Serial.println("Button pressed");
-    pageManager->press();
+    pageManager.press();
   });
-
-  pageManager = new PageManager();
-  pageManager->changePage(PagesEnum::LIST_MENU);
+  pageManager.changePage(PagesEnum::LIST_MENU);
 }
 
 void loop() {

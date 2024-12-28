@@ -6,7 +6,7 @@
 #include <Arduino.h>
 #include <optional>
 
-PageManager::PageManager(): currentPage(nullptr){
+PageManager::PageManager(CubeState& cubeState): currentPage(nullptr), cubeState(cubeState) {
 }
 
 std::unique_ptr<Page> PageManager::generatePage(PagesEnum pageType) {
@@ -18,7 +18,7 @@ std::unique_ptr<Page> PageManager::generatePage(PagesEnum pageType) {
         case PagesEnum::SOLVE_RUBIKS_CUBE:
             return std::make_unique<SolveRubiksCubePage>();
         case PagesEnum::MANUAL_COLOR_SETTINGS:
-            return std::make_unique<ManualColorSettingsPage>();
+            return std::make_unique<ManualColorSettingsPage>(cubeState);
         default:
             return nullptr;
     }

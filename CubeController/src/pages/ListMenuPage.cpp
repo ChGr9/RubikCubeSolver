@@ -21,14 +21,9 @@ void ListMenuPage::increment(int delta) {
 }
 
 std::optional<PagesEnum> ListMenuPage::press() {
-    Serial.printf("ListMenuPage pressed selected item %d\n", selectedItem);
     if(selectedItem < 0 || selectedItem >= items.size()) {
-        Serial.println("Invalid selected item");
         return std::nullopt;
     }
     PagesEnum page = items[selectedItem].page;
-    Serial.printf("Selected menu item: %s with enum value: %d\n", 
-                 items[selectedItem].name.c_str(), 
-                 static_cast<int>(page));
     return page;
 }
