@@ -31,4 +31,4 @@ jobs:
         docker tag cube-rest-api:latest ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/my-spring-app:latest
           
         # Push
-        docker push ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/my-spring-app:latest
+        docker push ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/cube-rest-api:latest
