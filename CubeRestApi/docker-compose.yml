@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   api:
     image: ghcr.io/chgr9/rubikcubesolver/cube-rest-api:latest
