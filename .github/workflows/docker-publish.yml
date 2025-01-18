@@ -19,7 +19,7 @@ jobs:
     - name: Build Docker image
       run: |
         cd CubeRestApi
-        docker build -t my-spring-app:latest .
+        docker build -t cube-rest-api:latest .
 
     - name: Login to GHCR
       run: |
