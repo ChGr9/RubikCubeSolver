@@ -28,7 +28,7 @@ jobs:
     - name: Tag and Push
       run: |
         # If your repo is "github.com/<owner>/<repo>", you can do:
-        docker tag cube-rest-api:latest ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/my-spring-app:latest
+        docker tag cube-rest-api:latest ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/cube-rest-api:latest
           
         # Push
         docker push ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/cube-rest-api:latest
