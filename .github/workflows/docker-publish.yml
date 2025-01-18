@@ -15,20 +15,20 @@ jobs:
       packages: write
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build Docker image
-      run: |
-        cd CubeRestApi
-        docker build -t cube-rest-api:latest .
+      - uses: actions/checkout@v4
 
-    - name: Login to GHCR
-      run: |
-        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Tag and Push
-      run: |
-        # If your repo is "github.com/<owner>/<repo>", you can do:
-        docker tag cube-rest-api:latest ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')/cube-rest-api:latest
-        
-        # Push
-        docker push ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')/cube-rest-api:latest
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build & Push multi-arch
+        run: |
+          cd CubeRestApi
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -t ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')/cube-rest-api:latest \
+            --push \
+            .
