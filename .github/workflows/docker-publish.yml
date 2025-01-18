@@ -17,7 +17,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build Docker image
-      run: docker build -t cube-rest-api:latest -f CubeRestApi/Dockerfile .
+      run: |
+        cd CubeRestApi
+        docker build -t my-spring-app:latest .
 
     - name: Login to GHCR
       run: |
