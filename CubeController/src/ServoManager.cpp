@@ -1,8 +1,8 @@
 #include "ServoManager.h"
 
-Servo ServoManager::bootServo;
-Servo ServoManager::handleServo;
-Servo ServoManager::holderServo;
+ExtentedRangeServo ServoManager::bootServo;
+ExtentedRangeServo ServoManager::handleServo;
+ExtentedRangeServo ServoManager::holderServo;
 bool ServoManager::isBootUp;
 int ServoManager::holderPosIndex;
 

@@ -1,23 +1,23 @@
 #pragma once
-#include "ESP32SERVO_WRAPPER.h"
+#include "ExtendedRangeServo.h"
 
 #define SERVO_MIN 500
 #define SERVO_MAX 2500
 
 class ServoManager {
     private:
-        static Servo bootServo;
+        static ExtentedRangeServo bootServo;
         #define BOOT_SERVO_PIN 27
         static const int bootRestPos = 1166;
         static const int bootMidPos = 1050;
         static const int bootKickPos = 940;
 
-        static Servo handleServo;
+        static ExtentedRangeServo handleServo;
         #define HANDLE_SERVO_PIN 12
         static const int handleOpenPos = 1166;
         static const int handleClosePos = 1920;
 
-        static Servo holderServo;
+        static ExtentedRangeServo holderServo;
         #define HOLDER_SERVO_PIN 25
 
         static bool isBootUp;

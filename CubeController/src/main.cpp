@@ -9,9 +9,9 @@
 #include "pages/ListMenuPage.h"
 #include "CubeState.h"
 
-#define ROTARY_PIN_SW   18
+#define ROTARY_PIN_SW   21
 #define ROTARY_PIN_DT   19
-#define ROTARY_PIN_CLK  21
+#define ROTARY_PIN_CLK  18
 
 int lastPosition = 0;
 
@@ -68,8 +68,8 @@ void setup() {
   Serial.begin(9600);
   DisplayManager::init();
   preferences.begin("network", false);
-  String ssid = preferences.getString("ssid", "");
-  String password = preferences.getString("password", "");
+  String ssid = preferences.getString("ssid", "CYTA_GG");
+  String password = preferences.getString("password", "kaniPelares96*99");
   WiFi.begin(ssid, password);
   int progress = 0;
   while (WiFi.status() != WL_CONNECTED) {
