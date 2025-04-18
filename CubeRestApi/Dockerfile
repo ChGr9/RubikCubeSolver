@@ -19,6 +19,7 @@ RUN apt-get update && \
         git ca-certificates \
         git build-essential meson ninja-build pkg-config python3-yaml \
         libboost-program-options-dev \
+        libexif-dev \
         libcamera-dev  libdrm-dev  libudev-dev \
         libjpeg-dev    libtiff5-dev  libpng-dev && \
     rm -rf /var/lib/apt/lists/*
