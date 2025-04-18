@@ -28,7 +28,7 @@ jobs:
         run: |
           cd CubeRestApi
           docker buildx build \
-            --platform linux/amd64,linux/arm64 \
+            --platform linux/arm64 \
             -t ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')/cube-rest-api:latest \
             --push \
             .
