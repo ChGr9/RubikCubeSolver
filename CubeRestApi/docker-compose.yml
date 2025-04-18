@@ -6,3 +6,9 @@ services:
     ports:
       - "8181:8080"
     restart: unless-stopped
+    devices:
+      - /dev/video0:/dev/video0
+    volumes:
+      - ./scans:/app/scans
+    environment:
+      - SPRING_PROFILES_ACTIVE=raspberry
