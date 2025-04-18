@@ -8,10 +8,20 @@ COPY src ./src
 RUN --mount=type=cache,target=/root/.m2 mvn -q -B clean package
 
 ARG TARGETPLATFORM
-FROM --platform=$TARGETPLATFORM ghcr.io/dtcooper/raspberrypi-os:bullseye AS pi-base
+FROM --platform=$TARGETPLATFORM balenalib/raspberrypi5-debian:bullseye-build AS pi-base
 
-# straightforward install of the Pi camera apps
 RUN apt-get update && \
+    # 1) Install APT helpers
+    apt-get install -y --no-install-recommends \
+      apt-transport-https ca-certificates gnupg curl && \
+    # 2) Add the Raspbian archive key
+    curl -fsSL https://archive.raspberrypi.org/debian/raspberrypi.gpg.key \
+      | apt-key add - && \
+    # 3) Point at the Raspbian Bullseye repo (main + contrib + non-free + rpi)
+    printf "deb http://raspbian.raspberrypi.org/raspbian/ bullseye main contrib non-free rpi\n" \
+      > /etc/apt/sources.list.d/raspi.list && \
+    # 4) Install the Pi‑camera apps
+    apt-get update && \
     apt-get install -y --no-install-recommends rpicam-apps udev && \
     rm -rf /var/lib/apt/lists/*
 
