@@ -1,2 +1,11 @@
+# PlatformIO build directory
 .pio
-.vscode
+.pioenvs
+.piolibdeps
+.piolib
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo

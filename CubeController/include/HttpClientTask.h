@@ -5,7 +5,9 @@
 
 class HttpClientTask : public Task<String> {
     public:
-        HttpClientTask(String url): Task("Http Client Task"), url(url) {}
+        HttpClientTask(String url): Task("Http Client Task", [this]{
+            return func();
+        }), url(url) {}
     private:
         const String url;
         String func() {
@@ -20,7 +22,7 @@ class HttpClientTask : public Task<String> {
                     response = "HTTP Error: " + String(httpCode);
             }
             else
-                response = "HTTP GET failed: " + http.errorToString(httpCode);
+                response = "HTTP Error Code: " + http.errorToString(httpCode);
             http.end();
             return response;
         }

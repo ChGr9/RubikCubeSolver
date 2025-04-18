@@ -35,22 +35,18 @@ void reconnect() {
   int progress = 0;
   while (WiFi.status() != WL_CONNECTED && millis() - start < 30000) { // 30 seconds timeout
     delay(50);
-    {
-      DisplayScope scope;
-      DisplayManager::printCentered("Connecting to WiFi", 20);
-      DisplayManager::drawLoading(progress);
-    }
+    DisplayScope scope;
+    DisplayManager::printCentered("Connecting to WiFi", 20);
+    DisplayManager::drawLoading(progress);
 
     progress = (progress + 10) % 360;
   }
   
-  {
-    DisplayScope scope;
-    if(WiFi.status() == WL_CONNECTED) {
-      DisplayManager::printCentered("WiFi reconnected");
-    } else {
-      DisplayManager::print("Failed to reconnect to WiFi");
-    }
+  DisplayScope scope;
+  if(WiFi.status() == WL_CONNECTED) {
+    DisplayManager::printCentered("WiFi reconnected");
+  } else {
+    DisplayManager::print("Failed to reconnect to WiFi");
   }
 }
 
@@ -65,7 +61,7 @@ void encoderLoop() {
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   DisplayManager::init();
   preferences.begin("network", false);
   String ssid = preferences.getString("ssid", "CYTA_GG");
@@ -74,11 +70,9 @@ void setup() {
   int progress = 0;
   while (WiFi.status() != WL_CONNECTED) {
     delay(50);
-    {
-      DisplayScope scope;
-      DisplayManager::printCentered("Connecting to WiFi", 20);
-      DisplayManager::drawLoading(progress);
-    }
+    DisplayScope scope;
+    DisplayManager::printCentered("Connecting to WiFi", 20);
+    DisplayManager::drawLoading(progress);
 
     progress = (progress + 10) % 360;
   }

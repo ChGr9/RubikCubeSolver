@@ -7,6 +7,7 @@
 class SolveRubiksCubePage : public Page {
     private:
         CubeState& cubeState;
+        bool hasError = false;
     public:
         SolveRubiksCubePage(CubeState& cubeState) : Page(), cubeState(cubeState) {}
         void show();

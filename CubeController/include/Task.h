@@ -1,48 +1,37 @@
 #pragma once
 #include <Arduino.h>
+#include <functional>
 
 template<typename T>
 class Task {
 public:
-    enum Status {
-        NOT_STARTED,
-        RUNNING,
-        FINISHED
-    };
+  using Func = std::function<T()>;
 
-    Task(const String name): name(name), status(NOT_STARTED) {}
+  Task(const String& name, Func f)
+    : name(name), func(std::move(f)), status(NOT_STARTED) {}
 
-    virtual ~Task() {}
+  void execute() {
+    xTaskCreatePinnedToCore(
+      run, name.c_str(), 8192, this, 1, nullptr, 1
+    );
+  }
 
-    void execute() {
-        xTaskCreatePinnedToCore(
-            run,
-            name.c_str(),
-            8192,
-            this,
-            1,
-            NULL,
-            1
-        );
-    }
-
-    T getResponse() const { return response; }
-    bool hasFinished() const { return status == FINISHED; }
-
-protected:
-    virtual T func() = 0;
+  T getResponse() const      { return response; }
+  bool hasFinished() const   { return status == FINISHED; }
 
 private:
-    T response;
-    Status status;
-    const String name;
-    static void run(void* instance) {
-        auto* task = static_cast<Task<T>*>(instance);
-        if (task->status == NOT_STARTED) {
-            task->status = RUNNING;
-            task->response = task->func();
-            task->status = FINISHED;
-        }
-        vTaskDelete(nullptr);
+  enum Status { NOT_STARTED, RUNNING, FINISHED } status;
+  String   name;
+  Func     func;
+  T        response;
+
+  static void run(void* inst) {
+    auto* self = static_cast<Task*>(inst);
+    if (self->status == NOT_STARTED) {
+      self->status   = RUNNING;
+      self->response = self->func();
+      self->status   = FINISHED;
     }
+    vTaskDelete(nullptr);
+  }
 };

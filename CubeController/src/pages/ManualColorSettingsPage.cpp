@@ -2,19 +2,17 @@
 #include "DisplayManager.h"
 
 void ManualColorSettingsPage::show() {
-    {
-        DisplayScope scope;
-        const int headerY = 10;
-        DisplayManager::printCentered(cubeState.sides[selectedFace].c_str(), headerY);
-        DisplayManager::print("<", 10, headerY, index == 0 ? DisplayManager::INVERTED : DisplayManager::NORMAL);
-        DisplayManager::print(">", 120, headerY, index == 1 ? DisplayManager::INVERTED : DisplayManager::NORMAL);
-        for(int i=0; i<9; i++) {
-            int x = 20 + (i % 3) * 40;
-            int y = 25 + (i / 3) * 12;
-            DisplayManager::print(cubeState.get(selectedFace * 9 + i), x, y, index == i + 2 ? (isCubeletSelected ? DisplayManager::UNDERLINED : DisplayManager::INVERTED) : DisplayManager::NORMAL);
-        }
-        DisplayManager::printCentered("Back", 60, index == 11 ? DisplayManager::INVERTED : DisplayManager::NORMAL);
+    DisplayScope scope;
+    const int headerY = 10;
+    DisplayManager::printCentered(cubeState.sides[selectedFace].c_str(), headerY);
+    DisplayManager::print("<", 10, headerY, index == 0 ? DisplayManager::INVERTED : DisplayManager::NORMAL);
+    DisplayManager::print(">", 120, headerY, index == 1 ? DisplayManager::INVERTED : DisplayManager::NORMAL);
+    for(int i=0; i<9; i++) {
+        int x = 20 + (i % 3) * 40;
+        int y = 25 + (i / 3) * 12;
+        DisplayManager::print(cubeState.get(selectedFace * 9 + i), x, y, index == i + 2 ? (isCubeletSelected ? DisplayManager::UNDERLINED : DisplayManager::INVERTED) : DisplayManager::NORMAL);
     }
+    DisplayManager::printCentered("Back", 60, index == 11 ? DisplayManager::INVERTED : DisplayManager::NORMAL);
 }
 
 void ManualColorSettingsPage::increment(int delta) {

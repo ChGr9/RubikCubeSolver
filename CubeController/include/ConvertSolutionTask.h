@@ -10,10 +10,12 @@ class ConvertSolutionTask : public Task<std::vector<DMove>> {
         std::array<char,4> xAxisOrder  = {'F', 'D', 'B', 'U'};
         std::array<char,4> yAxisOrder  = {'F', 'R', 'B', 'L'};
     public:
-        ConvertSolutionTask(String solution): Task("Convert Solution Task"), solution(solution) {}
+        ConvertSolutionTask(String solution): Task("Convert Solution Task", [this]{
+            return func();
+        }), solution(solution) {}
     private:
         std::vector<std::string> simplifySolution(String& solution);
         void applyAxisMove(std::vector<Move>& Moves, MoveType axis, int times);
     protected:
-        std::vector<DMove> func() override;
+        std::vector<DMove> func();
 };

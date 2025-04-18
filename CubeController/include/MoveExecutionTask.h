@@ -4,7 +4,9 @@
 
 class MoveExecutionTask : public Task<bool> {
     public:
-        MoveExecutionTask(std::vector<DMove> moves): Task("Move Execution Task"), moves(moves), moveCount(moves.size()) {}
+        MoveExecutionTask(std::vector<DMove> moves): Task("Move Execution Task", [this]{
+            return func();
+        }), moves(moves), moveCount(moves.size()) {}
         int getMoveCount() { return moveCount; }
         int getMoveIndex() { return moveIndex; }
     private:
@@ -12,5 +14,5 @@ class MoveExecutionTask : public Task<bool> {
         int moveIndex = 0;
         int moveCount;
     protected:
-        bool func() override;
+        bool func();
 };

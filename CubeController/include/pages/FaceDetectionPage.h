@@ -1,10 +1,20 @@
 #pragma once
 #include "Page.h"
+#include "CubeState.h"
 
 class FaceDetectionPage : public Page {
+    private:
+        CubeState& cubeState;
+        std::array<int, 6> faces = { 4, 1, 2, 5, 0, 3 };
+        std::array<int, 6> rotation = { 0, -1, 2, 0, 1, 0 };
+        bool hasError = false;
     public:
-        FaceDetectionPage() {}
+        FaceDetectionPage(CubeState& cubeState) : Page(), cubeState(cubeState) {}
         void show();
         void increment(int delta);
         std::optional<PagesEnum> press();
+    private:
+        String process();
+        String scan();
+        String rotate(String str, int delta);
 };

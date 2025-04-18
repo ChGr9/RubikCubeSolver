@@ -14,7 +14,7 @@ std::unique_ptr<Page> PageManager::generatePage(PagesEnum pageType) {
         case PagesEnum::LIST_MENU:
             return std::make_unique<ListMenuPage>();
         case PagesEnum::FACE_DETECTION:
-            return std::make_unique<FaceDetectionPage>();
+            return std::make_unique<FaceDetectionPage>(cubeState);
         case PagesEnum::SOLVE_RUBIKS_CUBE:
             return std::make_unique<SolveRubiksCubePage>(cubeState);
         case PagesEnum::MANUAL_COLOR_SETTINGS:
