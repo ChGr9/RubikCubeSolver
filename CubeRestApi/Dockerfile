@@ -14,13 +14,13 @@ RUN --mount=type=cache,target=/root/.m2 mvn -B -q clean package
 FROM eclipse-temurin:23-jre
 WORKDIR /app
 
-# Install libcamera and other required packages
+# Install libcamera and other required packages for Raspberry Pi
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    libcamera-tools \
+    libcamera-apps \
     && rm -rf /var/lib/apt/lists/*
 
-# Create logs directory
+# Create scans directory
 RUN mkdir -p /app/scans && \
     chmod -R 777 /app/scans
 
