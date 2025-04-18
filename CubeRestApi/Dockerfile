@@ -15,8 +15,10 @@ FROM eclipse-temurin:23-jre-noble
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-      libcamera-apps udev && \
+    apt-get install -y --no-install-recommends software-properties-common ca-certificates && \
+    add-apt-repository universe && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends libcamera-apps udev && \
     rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /app/scans && chmod 777 /app/scans
