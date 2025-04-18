@@ -31,12 +31,12 @@ RUN meson setup build -Dbuildtype=release && \
 FROM eclipse-temurin:23-jre
 WORKDIR /app
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        libcamera0 libdrm2 libudev1 && \
-    rm -rf /var/lib/apt/lists/*
+COPY --from=cam-build /usr/lib/          /usr/lib/
+COPY --from=cam-build /usr/share/libcamera /usr/share/libcamera
 
-COPY --from=cam-build /opt/rpicam/ /
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libudev1 libdrm2 && \
+    rm -rf /var/lib/apt/lists/* \
 
 RUN mkdir -p /app/scans && \
     chmod -R 777 /app/scans
