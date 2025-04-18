@@ -12,4 +12,4 @@ services:
       - ./scans:/app/scans
       - ./logs:/app/logs
     environment:
-      - SPRING_PROFILES_ACTIVE=raspberry
+      - SPRING_PROFILES_ACTIVE=raspberrypi
