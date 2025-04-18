@@ -10,7 +10,15 @@ RUN --mount=type=cache,target=/root/.m2 mvn -q -B clean package
 FROM --platform=$TARGETPLATFORM balenalib/raspberrypi5-debian:bullseye-build AS pi-base
 
 RUN apt-get update && \
-    apt-get install rpicam-apps udev \
+    apt-get install -y --no-install-recommends \
+      apt-transport-https ca-certificates gnupg curl && \
+    curl -fsSL https://archive.raspberrypi.org/debian/raspberrypi.gpg.key \
+      | apt-key add - && \
+    echo "deb http://archive.raspberrypi.org/debian bullseye main" \
+      > /etc/apt/sources.list.d/raspi.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+      rpicam-apps udev && \
     rm -rf /var/lib/apt/lists/*
 
 FROM ibm-semeru-runtimes:open-23-jre-jammy
