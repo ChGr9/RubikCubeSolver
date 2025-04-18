@@ -2,50 +2,24 @@ FROM --platform=$BUILDPLATFORM maven:3.9.9-eclipse-temurin-23 AS build
 WORKDIR /app
 
 RUN --mount=type=cache,target=/root/.m2 \
-    --mount=type=cache,target=/app/target \
-    true
+    --mount=type=cache,target=/app/target true
 
 COPY pom.xml ./
-RUN --mount=type=cache,target=/root/.m2 mvn -B -q dependency:go-offline
+RUN --mount=type=cache,target=/root/.m2 mvn -q -B dependency:go-offline
 
 COPY src ./src
-RUN --mount=type=cache,target=/root/.m2 mvn -B -q clean package
+RUN --mount=type=cache,target=/root/.m2 mvn -q -B clean package
 
-FROM debian:bookworm AS cam-build
-WORKDIR /src
+
+FROM eclipse-temurin:23-jre-noble
+WORKDIR /app
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        git ca-certificates \
-        git build-essential meson ninja-build pkg-config python3-yaml \
-        libboost-program-options-dev \
-        libexif-dev \
-        libcamera-dev  libdrm-dev  libudev-dev \
-        libjpeg-dev    libtiff5-dev  libpng-dev && \
+      libcamera-apps udev && \
     rm -rf /var/lib/apt/lists/*
 
-RUN git clone --depth=1 https://github.com/raspberrypi/rpicam-apps /src/rpicam
-WORKDIR /src/rpicam
-
-RUN meson setup build -Dbuildtype=release \
-        -Denable_libav=disabled -Denable_qt=disabled \
-        -Denable_egl=disabled  -Denable_opencv=disabled \
-        -Denable_tflite=disabled -Denable_hailo=disabled && \
-    ninja -C build && \
-    DESTDIR=/opt/rpicam ninja -C build install
-
-FROM eclipse-temurin:23-jre
-WORKDIR /app
-
-COPY --from=cam-build /usr/lib/          /usr/lib/
-COPY --from=cam-build /usr/share/libcamera /usr/share/libcamera
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends libudev1 libdrm2 && \
-    rm -rf /var/lib/apt/lists/* \
-
-RUN mkdir -p /app/scans && \
-    chmod -R 777 /app/scans
+RUN mkdir -p /app/scans && chmod 777 /app/scans
 
 COPY --from=build /app/target/*.jar /app/app.jar
 EXPOSE 8080
