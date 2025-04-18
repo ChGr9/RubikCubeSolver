@@ -1,17 +1,13 @@
-FROM --platform=$BUILDPLATFORM maven:3.9.9-eclipse-temurin-23 AS build
+FROM maven:3.9.9-eclipse-temurin-23 AS build
 WORKDIR /app
-
 RUN --mount=type=cache,target=/root/.m2 \
     --mount=type=cache,target=/app/target true
-
 COPY pom.xml ./
 RUN --mount=type=cache,target=/root/.m2 mvn -q -B dependency:go-offline
-
 COPY src ./src
 RUN --mount=type=cache,target=/root/.m2 mvn -q -B clean package
 
-ARG TARGETPLATFORM
-FROM --platform=$TARGETPLATFORM ibm-semeru-runtimes:open-23-jre-jammy AS runtime
+FROM ibm-semeru-runtimes:open-23-jre-jammy
 WORKDIR /app
 
 RUN apt-get update && \
