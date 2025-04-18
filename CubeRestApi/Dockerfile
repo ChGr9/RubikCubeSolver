@@ -13,6 +13,17 @@ RUN --mount=type=cache,target=/root/.m2 mvn -B -q clean package
 
 FROM eclipse-temurin:23-jre
 WORKDIR /app
+
+# Install libcamera and other required packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libcamera-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create logs directory
+RUN mkdir -p /app/scans && \
+    chmod -R 777 /app/scans
+
 COPY --from=build /app/target/*.jar /app/app.jar
 EXPOSE 8080
 CMD ["java","-jar","app.jar"]
