@@ -11,19 +11,33 @@ RUN --mount=type=cache,target=/root/.m2 mvn -B -q dependency:go-offline
 COPY src ./src
 RUN --mount=type=cache,target=/root/.m2 mvn -B -q clean package
 
-FROM eclipse-temurin:23-jre-jammy
+FROM debian:bookworm AS cam-build
+WORKDIR /src
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        git build-essential meson ninja-build pkg-config python3-yaml \
+        libcamera-dev  libdrm-dev  libudev-dev \
+        libjpeg-dev    libtiff5-dev  libpng-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth=1 https://github.com/raspberrypi/rpicam-apps /src/rpicam
+WORKDIR /src/rpicam
+
+RUN meson setup build -Dbuildtype=release && \
+    ninja -C build && \
+    DESTDIR=/opt/rpicam ninja -C build install
+
+FROM eclipse-temurin:23-jre
 WORKDIR /app
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        libcamera-apps  \
-        libcamera0      \
-        udev            \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+        libcamera0 libdrm2 libudev1 && \
+    rm -rf /var/lib/apt/lists/*
 
-ENV LIBCAMERA_IPA_PATH=/usr/share/libcamera/ipa
+COPY --from=cam-build /opt/rpicam/ /
 
-# Create scans directory
 RUN mkdir -p /app/scans && \
     chmod -R 777 /app/scans
 
