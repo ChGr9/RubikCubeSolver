@@ -11,14 +11,17 @@ RUN --mount=type=cache,target=/root/.m2 mvn -B -q dependency:go-offline
 COPY src ./src
 RUN --mount=type=cache,target=/root/.m2 mvn -B -q clean package
 
-FROM eclipse-temurin:23-jre
+FROM eclipse-temurin:23-jre-jammy
 WORKDIR /app
 
-# Install libcamera and other required packages for Raspberry Pi
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    libcamera-apps \
-    && rm -rf /var/lib/apt/lists/*
+        libcamera-apps  \
+        libcamera0      \
+        udev            \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ENV LIBCAMERA_IPA_PATH=/usr/share/libcamera/ipa
 
 # Create scans directory
 RUN mkdir -p /app/scans && \
