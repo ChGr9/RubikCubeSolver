@@ -13,10 +13,6 @@ RUN --mount=type=cache,target=/root/.m2 mvn -q -B clean package
 FROM eclipse-temurin:23-jre
 WORKDIR /app
 
-COPY --from=pi-base /usr/bin/libcamera-still /usr/bin/
-COPY --from=pi-base /usr/lib/aarch64-linux-gnu/libcamera* /usr/lib/aarch64-linux-gnu/
-COPY --from=pi-base /usr/share/libcamera /usr/share/libcamera
-
 RUN mkdir -p /app/scans && chmod 777 /app/scans
 
 COPY --from=build /app/target/*.jar /app/app.jar
