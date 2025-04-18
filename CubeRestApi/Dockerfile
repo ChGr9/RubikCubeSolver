@@ -16,6 +16,7 @@ WORKDIR /src
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+        git ca-certificates \
         git build-essential meson ninja-build pkg-config python3-yaml \
         libcamera-dev  libdrm-dev  libudev-dev \
         libjpeg-dev    libtiff5-dev  libpng-dev && \
