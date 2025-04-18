@@ -9,7 +9,7 @@ RUN --mount=type=cache,target=/root/.m2 mvn -q -B clean package
 
 FROM --platform=$TARGETPLATFORM balenalib/raspberrypi5-debian:bullseye-build AS pi-base
 
-RUN install_packages libcamera-apps udev
+RUN install_packages rpicam-apps udev
 
 FROM ibm-semeru-runtimes:open-23-jre-jammy
 WORKDIR /app
