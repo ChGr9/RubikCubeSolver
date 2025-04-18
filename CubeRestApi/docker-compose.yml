@@ -10,6 +10,5 @@ services:
       - /dev/video0:/dev/video0
     volumes:
       - ./scans:/app/scans
-      - ./logs:/app/logs
     environment:
       - SPRING_PROFILES_ACTIVE=raspberrypi

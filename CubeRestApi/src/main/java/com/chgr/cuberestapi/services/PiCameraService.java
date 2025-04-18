@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import java.io.InputStream;
 
 @Service
-@Profile("raspberry")
+@Profile("raspberrypi")
 public class PiCameraService implements CameraService {
     private final String[] baseCmd = {
             "libcamera-still",
