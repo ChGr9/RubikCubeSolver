@@ -18,6 +18,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         git ca-certificates \
         git build-essential meson ninja-build pkg-config python3-yaml \
+        libboost-program-options-dev \
         libcamera-dev  libdrm-dev  libudev-dev \
         libjpeg-dev    libtiff5-dev  libpng-dev && \
     rm -rf /var/lib/apt/lists/*
@@ -25,7 +26,10 @@ RUN apt-get update && \
 RUN git clone --depth=1 https://github.com/raspberrypi/rpicam-apps /src/rpicam
 WORKDIR /src/rpicam
 
-RUN meson setup build -Dbuildtype=release && \
+RUN meson setup build -Dbuildtype=release \
+        -Denable_libav=disabled -Denable_qt=disabled \
+        -Denable_egl=disabled  -Denable_opencv=disabled \
+        -Denable_tflite=disabled -Denable_hailo=disabled && \
     ninja -C build && \
     DESTDIR=/opt/rpicam ninja -C build install
 
