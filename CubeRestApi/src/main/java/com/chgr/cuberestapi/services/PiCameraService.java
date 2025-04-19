@@ -9,6 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 @Service
@@ -52,8 +53,10 @@ public class PiCameraService implements CameraService {
             process.getInputStream().transferTo(data);
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                logger.error("Camera command failed with exit code: {}", exitCode);
-                throw new IOException("Camera command failed with exit code: " + exitCode);
+                String err = new String(process.getErrorStream().readAllBytes(),
+                        StandardCharsets.UTF_8);
+                logger.error("Camera exit {} – stderr:\n{}", exitCode, err);
+                throw new IOException("Camera failed: " + err);
             }
             logger.info("Camera command executed successfully.");
             return new ByteArrayInputStream(data.toByteArray());
