@@ -19,7 +19,8 @@ public class PiCameraService implements CameraService {
     private final String[] baseCmd = {
             "libcamera-still",
             "--nopreview",
-            "-t", "500",
+            "--encoding", "jpeg",
+            "-t", "150",
             "-o", "-"
     };
     
@@ -46,7 +47,6 @@ public class PiCameraService implements CameraService {
         try {
             logger.info("Executing camera command: {}", Arrays.toString(baseCmd));
             Process process = new ProcessBuilder(baseCmd)
-                    .redirectErrorStream(true)
                     .start();
             ByteArrayOutputStream data = new ByteArrayOutputStream();
             process.getInputStream().transferTo(data);
