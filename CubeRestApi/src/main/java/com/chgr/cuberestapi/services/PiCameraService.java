@@ -56,7 +56,7 @@ public class PiCameraService implements CameraService {
                 String err = new String(process.getErrorStream().readAllBytes(),
                         StandardCharsets.UTF_8);
                 logger.error("Camera exit {} – stderr:\n{}", exitCode, err);
-                throw new IOException("Camera failed: " + err);
+                throw new IOException("Camera failed: " + exitCode);
             }
             logger.info("Camera command executed successfully.");
             return new ByteArrayInputStream(data.toByteArray());
