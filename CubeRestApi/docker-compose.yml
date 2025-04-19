@@ -15,5 +15,4 @@ services:
     volumes:
       - ./scans:/app/scans
     environment:
-      - UDEV=1
       - SPRING_PROFILES_ACTIVE=raspberrypi
