@@ -10,7 +10,19 @@ RUN --mount=type=cache,target=/root/.m2 mvn -q -B dependency:go-offline
 COPY src ./src
 RUN --mount=type=cache,target=/root/.m2 mvn -q -B clean package
 
-FROM eclipse-temurin:23-jre
+FROM balenalib/raspberrypi3-debian:bookworm
+
+RUN apt-get update && apt-get install -y wget apt-transport-https gnupg curl && \
+    wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | apt-key add - && \
+    echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list && \
+    apt-get update && \
+    apt-get install -y temurin-23-jre
+
+RUN apt-get update && \
+    apt-get install -y libcamera-apps && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 RUN mkdir -p /app/scans && chmod 777 /app/scans

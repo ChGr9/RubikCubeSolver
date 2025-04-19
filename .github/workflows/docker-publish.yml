@@ -2,10 +2,13 @@ name: Docker Build & Push
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "**" ]
   pull_request:
     branches: [ "master" ]
   workflow_dispatch:
+
+env:
+  IMAGE_BASE: cube-rest-api
 
 jobs:
   docker-build:
@@ -20,15 +23,30 @@ jobs:
       - name: Set up Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Login to GHCR
+      - name: Decide image tag
+        id: tag
+        run: |
+          if [[ "${{ github.ref_name }}" == "master" ]]; then
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          else
+            SNAPSHOT="$(echo "${{ github.ref_name }}" | tr '/A-Z' '-a-z')-$(git rev-parse --short HEAD)"
+            echo "tag=$SNAPSHOT" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compute lower-case repo path
+        id: repo
+        run: |
+          echo "repo=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build & Push multi-arch
+      - name: Build & Push
         run: |
           cd CubeRestApi
           docker buildx build \
             --platform linux/arm64 \
-            -t ghcr.io/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')/cube-rest-api:latest \
+            -t ghcr.io/${{ steps.repo.outputs.repo }}/${{ env.IMAGE_BASE }}:${{ steps.tag.outputs.tag }} \
             --push \
             .
