@@ -6,9 +6,12 @@ services:
     ports:
       - "8181:8080"
     restart: unless-stopped
+    privileged: true
     devices:
       - /dev/video0:/dev/video0
       - /dev/media0:/dev/media0
+    group_add:
+      - "44" # video group
     volumes:
       - ./scans:/app/scans
     environment:
