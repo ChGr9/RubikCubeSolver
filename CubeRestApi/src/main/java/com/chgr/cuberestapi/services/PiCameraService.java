@@ -20,7 +20,7 @@ public class PiCameraService implements CameraService {
     private final String[] baseCmd = {
             "libcamera-still",
             "--nopreview",
-            "--encoding", "jpeg",
+            "--encoding", "jpg",
             "-t", "150",
             "-o", "-"
     };
