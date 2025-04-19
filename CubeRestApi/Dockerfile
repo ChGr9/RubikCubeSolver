@@ -10,7 +10,7 @@ RUN --mount=type=cache,target=/root/.m2 mvn -q -B dependency:go-offline
 COPY src ./src
 RUN --mount=type=cache,target=/root/.m2 mvn -q -B clean package
 
-FROM balenalib/raspberrypi3-debian:bookworm
+FROM balenalib/raspberrypi4-64-debian:bookworm
 
 RUN apt-get update && apt-get install -y wget apt-transport-https gnupg curl && \
     wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | apt-key add - && \
