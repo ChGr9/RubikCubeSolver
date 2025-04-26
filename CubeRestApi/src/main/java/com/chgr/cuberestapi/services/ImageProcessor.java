@@ -65,7 +65,7 @@ public class ImageProcessor {
                     averageColor.getGreen(), 
                     averageColor.getBlue(), 
                     null);
-            
+
             char colorChar = colorToChar(hsb);
             graphics.setColor(averageColor);
             graphics.fillRect(area.x, area.y, area.width, area.height);
@@ -99,29 +99,30 @@ public class ImageProcessor {
             return 'W'; // Low saturation, low brightness = likely white in shadow
         }
 
-        // Special handling for yellows that might look greenish
-        // Yellow has high brightness and moderate-high saturation
-        if (hsb[0] >= 0.08 && hsb[0] < 0.22 && hsb[1] > 0.5 && hsb[2] > 0.8) {
-            return 'Y'; // Definitely yellow (high value, high saturation)
-        }
-
-        // Orange special case
-        if ((hsb[0] >= 0.025 && hsb[0] < 0.08) && hsb[1] > 0.6 && hsb[2] > 0.7) {
+        // Orange special case - check before yellow
+        // Expanded orange range and stricter criteria to avoid confusion with yellow
+        if (hsb[0] >= 0.02 && hsb[0] < 0.09 && hsb[1] > 0.5 && hsb[2] > 0.6) {
             return 'O';
         }
         
+        // Special handling for yellows that might look greenish
+        // Yellow has high brightness and moderate-high saturation
+        if (hsb[0] >= 0.09 && hsb[0] < 0.22 && hsb[1] > 0.5 && hsb[2] > 0.8) {
+            return 'Y'; // Definitely yellow (high value, high saturation)
+        }
+        
         // Red detection - at start/end of hue circle
-        if ((hsb[0] >= 0.95 || hsb[0] < 0.025) && hsb[1] > 0.4) {
+        if ((hsb[0] >= 0.95 || hsb[0] < 0.02) && hsb[1] > 0.4) {
             return 'R'; // Red (narrower range at beginning of hue circle)
         }
         
         // Regular color ranges
         // Orange has more yellow in it than red
-        if (hsb[0] >= 0.025 && hsb[0] < 0.1 && hsb[1] > 0.4) {
-            return 'O'; // Orange (wider range - 0.025-0.1)
+        if (hsb[0] >= 0.02 && hsb[0] < 0.09 && hsb[1] > 0.4) {
+            return 'O'; // Orange (narrower range - 0.02-0.09)
         }
-        if (hsb[0] >= 0.1 && hsb[0] < 0.2 && hsb[1] > 0.4) {
-            return 'Y'; // Yellow (around 0.1-0.2) 
+        if (hsb[0] >= 0.09 && hsb[0] < 0.2 && hsb[1] > 0.4) {
+            return 'Y'; // Yellow (around 0.09-0.2) 
         }
         if (hsb[0] >= 0.2 && hsb[0] < 0.45 && hsb[1] > 0.3) {
             return 'G'; // Green (around 0.2-0.45)
@@ -137,7 +138,8 @@ public class ImageProcessor {
         double minDistance = Double.MAX_VALUE;
         char closestColor = 'W'; // Default
         
-        boolean nearRedOrangeBoundary = (hsb[0] >= 0.01 && hsb[0] <= 0.05) || hsb[0] >= 0.95;
+        boolean nearRedOrangeBoundary = (hsb[0] >= 0.01 && hsb[0] <= 0.03) || hsb[0] >= 0.95;
+        boolean nearOrangeYellowBoundary = hsb[0] >= 0.08 && hsb[0] <= 0.1;
         boolean nearYellowGreenBoundary = hsb[0] >= 0.18 && hsb[0] <= 0.22;
         
         for (Map.Entry<Character, Color> entry : COLOR_MAP.entrySet()) {
@@ -158,9 +160,17 @@ public class ImageProcessor {
             double valWeight = 2.0;
 
             // Adjust weights for specific boundary cases
-            if (nearRedOrangeBoundary && entry.getKey() == 'O') {
+            if (nearRedOrangeBoundary && entry.getKey() == 'R') {
                 hueWeight = 3.0;
                 valWeight = 4.0;
+            }
+            
+            // Favor orange over yellow in borderline cases
+            if (nearOrangeYellowBoundary) {
+                if (entry.getKey() == 'O' && hsb[2] > 0.6) {
+                    hueWeight = 3.0;
+                    valWeight = 5.0;
+                }
             }
             
             // Favor yellow over green for borderline cases
