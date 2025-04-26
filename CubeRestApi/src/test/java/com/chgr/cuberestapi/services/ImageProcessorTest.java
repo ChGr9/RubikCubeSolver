@@ -37,6 +37,6 @@ class ImageProcessorTest {
         assertNotNull(result);
         assertFalse(result.isEmpty());
         assertEquals(9, result.length(), "Result should be 9 characters long");
-        assertTrue(FilenameUtils.getBaseName(imagePath.getFileName().toString()).equalsIgnoreCase(result), "Result should match the file name");
+        assertEquals(FilenameUtils.getBaseName(imagePath.getFileName().toString()).toLowerCase(),result.toLowerCase(), "Result should match the file name");
     }
 }

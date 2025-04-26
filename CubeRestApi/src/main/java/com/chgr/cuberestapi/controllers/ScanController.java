@@ -51,7 +51,7 @@ public class ScanController {
     }
 
     @PostMapping(value = "/debug", produces = MediaType.IMAGE_JPEG_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public byte[] scanDebug(@RequestParam("image")MultipartFile imageFile) {
+    public byte[] scanDebug(@RequestParam("image") MultipartFile imageFile) {
         try {
             InputStream inputStream = imageFile.getInputStream();
             BufferedImage image = ImageIO.read(inputStream);

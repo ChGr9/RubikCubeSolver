@@ -91,6 +91,7 @@ public class ImageProcessor {
     private char colorToChar(float[] hsb) {
         System.out.printf("HSV: [%.3f, %.3f, %.3f]\n", hsb[0], hsb[1], hsb[2]);
 
+        // White detection - low saturation
         if (hsb[1] < 0.1 && hsb[2] > 0.7) {
             return 'W'; // Low saturation, high brightness = white
         }
@@ -98,14 +99,23 @@ public class ImageProcessor {
             return 'W'; // Low saturation, low brightness = likely white in shadow
         }
 
+        // Special handling for yellows that might look greenish
+        // Yellow has high brightness and moderate-high saturation
+        if (hsb[0] >= 0.08 && hsb[0] < 0.22 && hsb[1] > 0.5 && hsb[2] > 0.8) {
+            return 'Y'; // Definitely yellow (high value, high saturation)
+        }
+
+        // Orange special case
         if ((hsb[0] >= 0.025 && hsb[0] < 0.08) && hsb[1] > 0.6 && hsb[2] > 0.7) {
             return 'O';
         }
         
-
+        // Red detection - at start/end of hue circle
         if ((hsb[0] >= 0.95 || hsb[0] < 0.025) && hsb[1] > 0.4) {
             return 'R'; // Red (narrower range at beginning of hue circle)
         }
+        
+        // Regular color ranges
         // Orange has more yellow in it than red
         if (hsb[0] >= 0.025 && hsb[0] < 0.1 && hsb[1] > 0.4) {
             return 'O'; // Orange (wider range - 0.025-0.1)
@@ -128,6 +138,7 @@ public class ImageProcessor {
         char closestColor = 'W'; // Default
         
         boolean nearRedOrangeBoundary = (hsb[0] >= 0.01 && hsb[0] <= 0.05) || hsb[0] >= 0.95;
+        boolean nearYellowGreenBoundary = hsb[0] >= 0.18 && hsb[0] <= 0.22;
         
         for (Map.Entry<Character, Color> entry : COLOR_MAP.entrySet()) {
             Color refColor = entry.getValue();
@@ -146,9 +157,18 @@ public class ImageProcessor {
             double satWeight = 3.0;
             double valWeight = 2.0;
 
+            // Adjust weights for specific boundary cases
             if (nearRedOrangeBoundary && entry.getKey() == 'O') {
                 hueWeight = 3.0;
                 valWeight = 4.0;
+            }
+            
+            // Favor yellow over green for borderline cases
+            if (nearYellowGreenBoundary) {
+                if (entry.getKey() == 'Y' && hsb[2] > 0.8) {
+                    hueWeight = 3.0;
+                    valWeight = 5.0;
+                }
             }
             
             double distance = hueDiff * hueWeight + 
@@ -165,18 +185,49 @@ public class ImageProcessor {
     }
 
     private Color getAverageColor(BufferedImage image, Rectangle area) {
-        int red = 0, green = 0, blue = 0;
-        int count = 0;
+        // Create histograms for each color channel
+        int[] redHistogram = new int[256];
+        int[] greenHistogram = new int[256];
+        int[] blueHistogram = new int[256];
+        
+        // Fill the histograms
         for (int x = area.x; x < area.x + area.width; x++) {
             for (int y = area.y; y < area.y + area.height; y++) {
                 Color color = new Color(image.getRGB(x, y));
-                red += color.getRed();
-                green += color.getGreen();
-                blue += color.getBlue();
-                count++;
+                redHistogram[color.getRed()]++;
+                greenHistogram[color.getGreen()]++;
+                blueHistogram[color.getBlue()]++;
             }
         }
-        return new Color(red / count, green / count, blue / count);
+        
+        // Find the dominant colors (peaks in the histogram)
+        int dominantRed = findDominantValue(redHistogram);
+        int dominantGreen = findDominantValue(greenHistogram);
+        int dominantBlue = findDominantValue(blueHistogram);
+        
+        // Return the dominant color
+        return new Color(dominantRed, dominantGreen, dominantBlue);
+    }
+    
+    private int findDominantValue(int[] histogram) {
+        // Smooth the histogram to reduce noise
+        int[] smoothed = new int[256];
+        for (int i = 1; i < 255; i++) {
+            smoothed[i] = (histogram[i-1] + histogram[i] * 2 + histogram[i+1]) / 4;
+        }
+        
+        // Find the peak
+        int maxCount = 0;
+        int dominantValue = 128; // Default to middle value
+        
+        for (int i = 0; i < 256; i++) {
+            if (smoothed[i] > maxCount) {
+                maxCount = smoothed[i];
+                dominantValue = i;
+            }
+        }
+        
+        return dominantValue;
     }
 
     public static String fmtRect(Rectangle r) {
