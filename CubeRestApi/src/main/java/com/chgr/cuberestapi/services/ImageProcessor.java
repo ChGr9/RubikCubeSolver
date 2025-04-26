@@ -22,15 +22,15 @@ public class ImageProcessor {
     );
 
     private static final Rectangle[] SCAN_AREAS = {
-            new Rectangle(925, 150, 350, 275),
-            new Rectangle(1475, 150, 300, 250),
-            new Rectangle(1925, 225, 200, 250),
-            new Rectangle(900, 550, 375, 425),
-            new Rectangle(1450, 550, 375, 450),
-            new Rectangle(2000, 600, 250, 375),
-            new Rectangle(875, 1100, 400, 450),
-            new Rectangle(1450, 1125, 400, 425),
-            new Rectangle(1975, 1100, 275, 350),
+            new Rectangle(1000, 225, 350, 300),
+            new Rectangle(1475, 200, 325, 275),
+            new Rectangle(1925, 275, 225, 275),
+            new Rectangle(975, 625, 375, 425),
+            new Rectangle(1475, 650, 400, 350),
+            new Rectangle(1975, 625, 250, 375),
+            new Rectangle(975, 1110, 425, 400),
+            new Rectangle(1500, 1150, 375, 375),
+            new Rectangle(1975, 1100, 250, 325),
     };
 
     public String process(BufferedImage image) {
