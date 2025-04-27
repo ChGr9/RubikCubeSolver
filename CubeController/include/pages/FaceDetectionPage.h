@@ -6,8 +6,9 @@ class FaceDetectionPage : public Page {
     private:
         CubeState& cubeState;
         std::array<int, 6> faces = { 4, 1, 2, 5, 0, 3 };
-        std::array<int, 6> rotation = { 0, -1, 2, 0, 1, 0 };
+        std::array<int, 6> rotation = { 0, 3, 2, 0, 3, 0 };
         bool hasError = false;
+        bool finished = false;
     public:
         FaceDetectionPage(CubeState& cubeState) : Page(), cubeState(cubeState) {}
         void show();

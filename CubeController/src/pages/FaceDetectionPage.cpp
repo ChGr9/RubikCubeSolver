@@ -7,15 +7,6 @@ void FaceDetectionPage::show() {
     DisplayManager::clear();
     DisplayManager::printCentered("Face Detection");
     DisplayManager::sendBuffer();
-}
-
-void FaceDetectionPage::increment(int delta) {
-}
-
-std::optional<PagesEnum> FaceDetectionPage::press() {
-    if(hasError) {
-        return PagesEnum::LIST_MENU;
-    }
     int progress = 0;
     Task<String> task("Scan", [this]() {
         return process();
@@ -30,15 +21,26 @@ std::optional<PagesEnum> FaceDetectionPage::press() {
     }
     String result = task.getResponse();
     if (result.isEmpty()) {
-        return PagesEnum::LIST_MENU;
+        DisplayScope scope;
+        DisplayManager::printCentered("Scan complete", 20);
+        finished = true;
     }
     else {
         DisplayScope scope;
-        DisplayManager::printCentered(result.c_str(), 20);
+        DisplayManager::printWrapped(result.c_str());
         DisplayManager::sendBuffer();
         hasError = true;
-        return std::nullopt;
     }
+}
+
+void FaceDetectionPage::increment(int delta) {
+}
+
+std::optional<PagesEnum> FaceDetectionPage::press() {
+    if(hasError || finished) {
+        return PagesEnum::LIST_MENU;
+    }
+    return std::nullopt;
 }
 
 String FaceDetectionPage::process(){
@@ -50,11 +52,11 @@ String FaceDetectionPage::process(){
         }
         result.trim();
         if (result.length() != 9) {
-            return "Invalid scan result";
+            return "Invalid scan result: length " + String(result.length());
         }
         result = rotate(result, rotation[i]);
-        for (int i = 0; i < 9; i++) {
-            cubeState.set(faces[i] * 9 + i, result.charAt(i));
+        for (int j = 0; j < 9; j++) {
+            cubeState.set(faces[i] * 9 + j, result.charAt(j));
         }
         int turn = i % 2 == 0 ? 1 : -1;
         ServoManager::holderTurn(turn);
@@ -82,7 +84,10 @@ String FaceDetectionPage::scan() {
 }
 
 String FaceDetectionPage::rotate(String str, int delta) {
-    if (str.length() != 9) throw std::invalid_argument("Needs 9‐char string");
+    if (str.length() != 9) {
+        Serial.println("Warning: Invalid string length in rotate: " + String(str.length()));
+        return str;
+    }
 
     static constexpr std::array<std::array<int,9>,4> idx = {{
         // identity
@@ -100,7 +105,7 @@ String FaceDetectionPage::rotate(String str, int delta) {
     String dst;
     dst.reserve(9);
     for (int i = 0; i < 9; ++i) {
-        dst[i] = str[idx[r][i]];
+        dst += str[idx[r][i]];
     }
     return dst;
 }

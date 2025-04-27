@@ -26,8 +26,7 @@ void SolveRubiksCubePage::show() {
     String httpResponse = httpTask.getResponse();
     if (httpResponse.startsWith("HTTP Error")) {
         DisplayScope scope;
-        DisplayManager::printCentered("Error getting solution", 20);
-        DisplayManager::printCentered(httpResponse.c_str(), 40);
+        DisplayManager::printWrapped(httpResponse.c_str());
         hasError = true;
         return;
     }
@@ -43,7 +42,6 @@ void SolveRubiksCubePage::show() {
         progress = (progress + 10) % 360;
     }
     std::vector<DMove> moves = convertTask.getResponse();
-    
     MoveExecutionTask moveTask = MoveExecutionTask(moves);
     moveTask.execute();
     while (!moveTask.hasFinished())
@@ -57,13 +55,22 @@ void SolveRubiksCubePage::show() {
         DisplayManager::drawLoading(progress);
         progress = (progress + 10) % 360;
     }
+    if (moveTask.getMoveIndex() == moveTask.getMoveCount()) {
+        DisplayScope scope;
+        DisplayManager::printCentered("Cube solved", 20);
+        finished = true;
+    } else {
+        DisplayScope scope;
+        DisplayManager::printCentered("Error solving cube", 20);
+        hasError = true;
+    }
 }
 
 void SolveRubiksCubePage::increment(int delta) {
 }
 
 std::optional<PagesEnum> SolveRubiksCubePage::press() {
-    if (hasError) {
+    if (hasError || finished) {
         return PagesEnum::LIST_MENU;
     }
     return std::nullopt;

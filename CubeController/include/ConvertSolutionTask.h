@@ -7,8 +7,8 @@
 class ConvertSolutionTask : public Task<std::vector<DMove>> {
     private:
         String solution;
-        std::array<char,4> xAxisOrder  = {'F', 'D', 'B', 'U'};
-        std::array<char,4> yAxisOrder  = {'F', 'R', 'B', 'L'};
+        std::array<char,4> xAxisOrder  = {'F', 'U', 'B', 'D'};
+        std::array<char,4> yAxisOrder  = {'F', 'L', 'B', 'R'};
     public:
         ConvertSolutionTask(String solution): Task("Convert Solution Task", [this]{
             return func();
