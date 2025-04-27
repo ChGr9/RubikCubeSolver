@@ -6,12 +6,12 @@ bool MoveExecutionTask::func() {
         moveIndex++;
         switch(move.getMoveType()) {
             case MoveType::X:
-                for(int i = 0; i < 4- move.getTimes(); i++) {
+                for(int i = 0; i < move.getTimes(); i++) {
                     ServoManager::bootKick();
                 }
                 break;
             case MoveType::Y:
-                ServoManager::holderTurn(4 - move.getTimes());
+                ServoManager::holderTurn(move.getTimes());
                 break;
             case MoveType::Down:
                 ServoManager::handleClose();

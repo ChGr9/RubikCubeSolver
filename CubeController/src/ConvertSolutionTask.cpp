@@ -23,26 +23,26 @@ std::vector<DMove> ConvertSolutionTask::func() {
         switch (move.getMove())
         {
             case 'F':
-                dMoves.push_back(DMove(MoveType::X, 3));
-                applyAxisMove(moves, MoveType::X, 3);
+                dMoves.push_back(DMove(MoveType::X, 1));
+                applyAxisMove(moves, MoveType::X, 1);
                 break;
             case 'B':
                 dMoves.push_back(DMove(MoveType::Y, 2));
                 applyAxisMove(moves, MoveType::Y, 2);
-                dMoves.push_back(DMove(MoveType::X, 3));
-                applyAxisMove(moves, MoveType::X, 3);
+                dMoves.push_back(DMove(MoveType::X, 1));
+                applyAxisMove(moves, MoveType::X, 1);
                 break;
             case 'R':
-                dMoves.push_back(DMove(MoveType::Y, 1));
-                applyAxisMove(moves, MoveType::Y, 1);
-                dMoves.push_back(DMove(MoveType::X, 3));
-                applyAxisMove(moves, MoveType::X, 3);
-                break;
-            case 'L':
                 dMoves.push_back(DMove(MoveType::Y, 3));
                 applyAxisMove(moves, MoveType::Y, 3);
-                dMoves.push_back(DMove(MoveType::X, 3));
-                applyAxisMove(moves, MoveType::X, 3);
+                dMoves.push_back(DMove(MoveType::X, 1));
+                applyAxisMove(moves, MoveType::X, 1);
+                break;
+            case 'L':
+                dMoves.push_back(DMove(MoveType::Y, 1));
+                applyAxisMove(moves, MoveType::Y, 1);
+                dMoves.push_back(DMove(MoveType::X, 1));
+                applyAxisMove(moves, MoveType::X, 1);
                 break;
             case 'U':
                 dMoves.push_back(DMove(MoveType::X, 2));
