@@ -3,6 +3,8 @@ package com.chgr.cuberestapi.controllers;
 import com.chgr.cuberestapi.models.CubeState;
 import com.chgr.cuberestapi.models.MoveSequence;
 import com.chgr.cuberestapi.services.KociembaSolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,17 +18,20 @@ import java.util.List;
 @RequestMapping("/solve")
 @RestController
 public class SolveController {
+    private static final Logger logger = LoggerFactory.getLogger(SolveController.class);
 
     @GetMapping("/{cube}")
     public String solve(@PathVariable String cube){
         if(cube.length() != 54)
             throw new IllegalArgumentException("Cube must have 54 stickers");
+        logger.info("Solving cube: {}", cube);
 
         CubeState cubeState = new CubeState(cube);
 
         String solution = solve(cubeState);
         if(solution.isBlank())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No solution found");
+        logger.info("Solution: {}", solution);
         return solution;
     }
 
